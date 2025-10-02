@@ -71,6 +71,7 @@ src/
 │   └── components/
 └── config/                 # Configuraciones
     └── menuPermissions.js
+    
 🐳 Docker (Próximamente)
 El proyecto incluirá soporte para Docker con:
 
