@@ -1,3 +1,6 @@
+// src/app/theme.js
+// Tema y colores corporativos - SI CLINICA FARMA
+
 import { createTheme } from '@mui/material/styles';
 
 // COLORES CORPORATIVOS - SI CLINICA FARMA
@@ -67,7 +70,7 @@ export const clinicColors = {
   }
 };
 
-// Crear tema dinámico
+// Crear tema dinámico con soporte para modo claro/oscuro
 export const createAppTheme = (mode = 'light') => {
   const isDark = mode === 'dark';
   const colors = isDark ? clinicColors.dark : clinicColors.light;
@@ -207,3 +210,6 @@ export const createAppTheme = (mode = 'light') => {
     },
   });
 };
+
+// Export default para compatibilidad
+export default createAppTheme();

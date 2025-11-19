@@ -1,158 +1,226 @@
-import DashboardIcon from '@mui/icons-material/Dashboard';
-import PeopleIcon from '@mui/icons-material/People';
-import PersonIcon from '@mui/icons-material/Person';
-import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
-import LocalHospitalIcon from '@mui/icons-material/LocalHospital';
-import MedicalServicesIcon from '@mui/icons-material/MedicalServices';
-import ScienceIcon from '@mui/icons-material/Science';
-import LocalPharmacyIcon from '@mui/icons-material/LocalPharmacy';
-import ReceiptIcon from '@mui/icons-material/Receipt';
-import AssessmentIcon from '@mui/icons-material/Assessment';
-import SettingsIcon from '@mui/icons-material/Settings';
-import InventoryIcon from '@mui/icons-material/Inventory';
+// src/config/menuPermissions.js - Mapeo de permisos a elementos del menú
 
-// Configuración del menú con permisos
-export const menuItems = [
+import {
+  Group,
+  Inventory,
+  Warehouse,
+  ShoppingCart,
+  SwapHoriz,
+  PointOfSale,
+  Assessment,
+  Security
+} from '@mui/icons-material';
+
+// Función para crear los elementos del menú con íconos
+const createMenuItems = () => [
   {
-    id: 'dashboard',
-    label: 'Dashboard',
-    path: '/dashboard',
-    icono: DashboardIcon,
-    permisos: [] // Todos tienen acceso
-  },
-  {
-    id: 'pacientes',
-    label: 'Pacientes',
-    icono: PeopleIcon,
-    permisos: ['paciente_ver'],
-    submenu: [
-      { label: 'Lista de Pacientes', path: '/patients', permisos: ['paciente_ver'] },
-      { label: 'Nuevo Paciente', path: '/patients/new', permisos: ['paciente_crear'] },
-      { label: 'Historias Clínicas', path: '/medical-records', permisos: ['historia_clinica_ver'] }
+    texto: 'Usuarios',
+    icono: Group,
+    ruta: '/users',
+    requiredPermissions: ['usuario_lista', 'usuario_crear'],
+    requireAll: false,
+    subElementos: [
+      { 
+        texto: 'Nuevo Usuario', 
+        ruta: '/users/new',
+        requiredPermissions: ['usuario_crear']
+      },
+      { 
+        texto: 'Lista de Usuarios', 
+        ruta: '/users/list',
+        requiredPermissions: ['usuario_lista']
+      }
     ]
   },
   {
-    id: 'citas',
-    label: 'Citas',
-    icono: CalendarMonthIcon,
-    permisos: ['cita_ver'],
-    submenu: [
-      { label: 'Agenda', path: '/appointments', permisos: ['cita_ver'] },
-      { label: 'Nueva Cita', path: '/appointments/new', permisos: ['cita_crear'] }
+    texto: 'Productos',
+    icono: Inventory,
+    ruta: '/productos',
+    requiredPermissions: ['producto_ver'],
+    subElementos: [
+      { 
+        texto: 'Ver Productos', 
+        ruta: '/productos/ver',
+        requiredPermissions: ['producto_ver']
+      },
+      { 
+        texto: 'Agregar Producto', 
+        ruta: '/productos/agregar',
+        requiredPermissions: ['producto_crear']
+      }
     ]
   },
   {
-    id: 'consultas',
-    label: 'Consultas',
-    icono: LocalHospitalIcon,
-    permisos: ['consulta_ver'],
-    submenu: [
-      { label: 'Consultas del Día', path: '/consultations', permisos: ['consulta_ver'] },
-      { label: 'Nueva Consulta', path: '/consultations/new', permisos: ['consulta_crear'] },
-      { label: 'Recetas', path: '/prescriptions', permisos: ['receta_ver'] }
+    texto: 'Compras',
+    icono: ShoppingCart,
+    ruta: '/compras',
+    requiredPermissions: ['compra_crear', 'compra_editar', 'compra_salida'],
+    requireAll: false,
+    subElementos: [
+      { 
+        texto: 'Nueva Compra', 
+        ruta: '/compras/nueva',
+        requiredPermissions: ['compra_crear']
+      },
+      { 
+        texto: 'Nueva Salida', 
+        ruta: '/compras/salida',
+        requiredPermissions: ['compra_salida']
+      },
+      { 
+        texto: 'Compras a Credito', 
+        ruta: '/compras/credito',
+        requiredPermissions: ['compra_credito']
+      },
+      { 
+        texto: 'Ingresos del Día', 
+        ruta: '/compras/ingresos',
+        requiredPermissions: ['compra_ingresos']
+      }
     ]
   },
   {
-    id: 'laboratorio',
-    label: 'Laboratorio',
-    icono: ScienceIcon,
-    permisos: ['orden_lab_ver'],
-    submenu: [
-      { label: 'Órdenes', path: '/lab-orders', permisos: ['orden_lab_ver'] },
-      { label: 'Resultados', path: '/lab-results', permisos: ['resultado_lab_ver'] }
+    texto: 'Proveedor',
+    icono: Warehouse,
+    ruta: '/proveedor',
+    requiredPermissions: ['proveedor_ver', 'proveedor_crear'],
+    requireAll: false,
+    subElementos: [
+      { 
+        texto: 'Nuevo Proveedor', 
+        ruta: '/proveedor/nuevo',
+        requiredPermissions: ['proveedor_crear']
+      }
     ]
   },
   {
-    id: 'farmacia',
-    label: 'Farmacia',
-    icono: LocalPharmacyIcon,
-    permisos: ['medicamento_ver'],
-    submenu: [
-      { label: 'Dispensación', path: '/pharmacy/dispense', permisos: ['medicamento_dispensar'] },
-      { label: 'Inventario', path: '/pharmacy/inventory', permisos: ['medicamento_ver'] },
-      { label: 'Stock', path: '/pharmacy/stock', permisos: ['stock_ver'] }
+    texto: 'Ventas',
+    icono: PointOfSale,
+    ruta: '/ventas',
+    requiredPermissions: ['venta_crear', 'venta_pedidos'],
+    requireAll: false,
+    subElementos: [
+      { 
+        texto: 'Nueva Venta', 
+        ruta: '/ventas/nueva',
+        requiredPermissions: ['venta_crear']
+      },
+      { 
+        texto: 'Realizar Pedidos', 
+        ruta: '/ventas/pedidos',
+        requiredPermissions: ['venta_pedidos']
+      },
+      { 
+        texto: 'Mis Pedidos', 
+        ruta: '/ventas/mis-pedidos',
+        requiredPermissions: ['venta_mis_pedidos']
+      }
     ]
   },
   {
-    id: 'facturacion',
-    label: 'Facturación',
-    icono: ReceiptIcon,
-    permisos: ['factura_ver'],
-    submenu: [
-      { label: 'Facturas', path: '/billing', permisos: ['factura_ver'] },
-      { label: 'Pagos', path: '/payments', permisos: ['pago_ver'] }
+    texto: 'Traspasos',
+    icono: SwapHoriz,
+    ruta: '/traspasos',
+    requiredPermissions: ['traspaso_crear', 'traspaso_aprobar'],
+    requireAll: false,
+    subElementos: [
+      { 
+        texto: 'Nuevo Traspaso', 
+        ruta: '/traspasos/nuevo',
+        requiredPermissions: ['traspaso_crear']
+      }
     ]
   },
   {
-    id: 'reportes',
-    label: 'Reportes',
-    icono: AssessmentIcon,
-    permisos: ['reporte_pacientes', 'reporte_consultas', 'reporte_ingresos'],
-    submenu: [
-      { label: 'Pacientes', path: '/reports/patients', permisos: ['reporte_pacientes'] },
-      { label: 'Consultas', path: '/reports/consultations', permisos: ['reporte_consultas'] },
-      { label: 'Ingresos', path: '/reports/income', permisos: ['reporte_ingresos'] }
+    texto: 'Reportes',
+    icono: Assessment,
+    ruta: '/reportes',
+    requiredPermissions: ['reporte_diario', 'reporte_mensual', 'reporte_ventas'],
+    requireAll: false,
+    subElementos: [
+      { 
+        texto: 'Reporte Diario', 
+        ruta: '/reportes/diario',
+        requiredPermissions: ['reporte_diario']
+      },
+      { 
+        texto: 'Reporte Mensual', 
+        ruta: '/reportes/mensual',
+        requiredPermissions: ['reporte_mensual']
+      },
+      { 
+        texto: 'Reporte Todos', 
+        ruta: '/reportes/todos',
+        requiredPermissions: ['reporte_ventas', 'reporte_compras']
+      },
+      { 
+        texto: 'Reporte Productos', 
+        ruta: '/reportes/productos',
+        requiredPermissions: ['reporte_productos']
+      },
+      { 
+        texto: 'Reporte por sucursales', 
+        ruta: '/reportes/sucursales',
+        requiredPermissions: ['reporte_sucursales']
+      },
+      { 
+        texto: 'Kardex', 
+        ruta: '/reportes/kardex',
+        requiredPermissions: ['reporte_kardex']
+      }
     ]
   },
   {
-    id: 'inventario',
-    label: 'Inventario',
-    icono: InventoryIcon,
-    permisos: ['medicamento_gestionar'],
-    submenu: [
-      { label: 'Productos', path: '/inventory/products', permisos: ['medicamento_ver'] },
-      { label: 'Movimientos', path: '/inventory/movements', permisos: ['stock_ver'] }
-    ]
-  },
-  {
-    id: 'usuarios',
-    label: 'Usuarios',
-    icono: PersonIcon,
-    permisos: ['usuario_ver'],
-    submenu: [
-      { label: 'Gestión de Usuarios', path: '/users', permisos: ['usuario_ver'] },
-      { label: 'Mi Perfil', path: '/profile', permisos: [] }
-    ]
-  },
-  {
-    id: 'configuracion',
-    label: 'Configuración',
-    icono: SettingsIcon,
-    permisos: ['config_general'],
-    submenu: [
-      { label: 'General', path: '/settings/general', permisos: ['config_general'] },
-      { label: 'Sucursales', path: '/settings/branches', permisos: ['sucursal_gestionar'] },
-      { label: 'Especialidades', path: '/settings/specialties', permisos: ['especialidad_gestionar'] }
+    texto: 'Configuracion',
+    icono: Security,
+    ruta: '/configuracion',
+    requiredPermissions: ['sistema_configuracion', 'sistema_sucursales'],
+    requireAll: false,
+    subElementos: [
+      { 
+        texto: 'Ordenar sucursales', 
+        ruta: '/configuracion/sucursales',
+        requiredPermissions: ['sistema_sucursales']
+      }
     ]
   }
 ];
 
-// Función para filtrar menú según permisos del usuario
-export const getFilteredMenuItems = (userPermissions) => {
-  return menuItems.filter(item => {
-    // Si no requiere permisos, mostrar
-    if (item.permisos.length === 0) return true;
-    
-    // Si requiere permisos, verificar si el usuario tiene al menos uno
-    const hasPermission = item.permisos.some(permiso => 
-      userPermissions.includes(permiso)
-    );
-    
-    if (!hasPermission) return false;
-    
-    // Si tiene submenú, filtrar también los items del submenú
-    if (item.submenu) {
-      item.submenu = item.submenu.filter(subitem => {
-        if (subitem.permisos.length === 0) return true;
-        return subitem.permisos.some(permiso => 
-          userPermissions.includes(permiso)
-        );
-      });
-      
-      // Si después de filtrar no quedan subitems, no mostrar el menú principal
-      return item.submenu.length > 0;
-    }
-    
+// Exportar la función que genera los items
+export const menuItemsWithPermissions = createMenuItems();
+
+/**
+ * Verifica si el usuario tiene los permisos necesarios para un elemento del menú
+ */
+export const hasMenuAccess = (userPermissions, requiredPermissions, requireAll = false) => {
+  if (!requiredPermissions || requiredPermissions.length === 0) {
     return true;
-  });
+  }
+
+  if (!userPermissions || userPermissions.length === 0) {
+    return false;
+  }
+
+  if (requireAll) {
+    return requiredPermissions.every(perm => userPermissions.includes(perm));
+  } else {
+    return requiredPermissions.some(perm => userPermissions.includes(perm));
+  }
+};
+
+/**
+ * Filtra los elementos del menú según los permisos del usuario
+ */
+export const getFilteredMenuItems = (userPermissions) => {
+  return menuItemsWithPermissions
+    .filter(item => hasMenuAccess(userPermissions, item.requiredPermissions, item.requireAll))
+    .map(item => ({
+      ...item,
+      subElementos: item.subElementos 
+        ? item.subElementos.filter(subItem => 
+            hasMenuAccess(userPermissions, subItem.requiredPermissions, false)
+          )
+        : []
+    }))
+    .filter(item => !item.subElementos || item.subElementos.length > 0);
 };
