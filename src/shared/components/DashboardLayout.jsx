@@ -37,6 +37,7 @@ import { useSnackbar } from 'notistack';
 import { clinicColors } from '../../app/theme';
 import { getFilteredMenuItems } from '../../config/menuBuilder';
 import React from 'react';
+import { useAuth } from '../../context/AuthContext'; 
 
 const drawerWidth = 280;
 const drawerWidthClosed = 70;
@@ -45,6 +46,7 @@ const DashboardLayout = ({ children, currentUser }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { enqueueSnackbar } = useSnackbar();
+  const { logout } = useAuth(); 
   
   const [open, setOpen] = useState(true);
   const [anchorEl, setAnchorEl] = useState(null);
@@ -82,7 +84,7 @@ const DashboardLayout = ({ children, currentUser }) => {
     localStorage.clear();
     sessionStorage.clear();
     enqueueSnackbar('Sesión cerrada correctamente', { variant: 'info' });
-    navigate('/');
+    logout();
   };
 
   const handleNavigation = (path) => {

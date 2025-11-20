@@ -1,4 +1,4 @@
-// src/modules/user-management/components/AssignPermissions.jsx - VERSIÓN MEJORADA DINAMAX
+// src/modules/user-management/components/AssignPermissions.jsx - VERSIÓN CORREGIDA LAYOUT 2 COLUMNAS
 
 import React, { useState, useEffect } from "react";
 import {
@@ -23,20 +23,19 @@ import {
   Alert,
   Switch,
   Avatar,
-  Badge,
   CircularProgress,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogContentText,
   DialogActions,
+  InputAdornment,
 } from "@mui/material";
 import {
   ExpandMore,
   Person,
   Save,
   Cancel,
-  CheckCircle,
   SelectAll,
   ClearAll as DeselectAll,
   VpnKey,
@@ -394,573 +393,586 @@ const AssignPermissions = ({ onCancel }) => {
         </Box>
       </Paper>
 
+      {/* Grid con layout 2 columnas */}
       <Grid container spacing={3}>
-        {/* Panel izquierdo */}
-        <Grid item xs={12} md={4}>
-          <Card sx={{ 
-            mb: 3, 
-            borderRadius: 3,
-            boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
-            border: `1px solid ${clinicColors.alpha.primary10}`
-          }}>
-            <CardContent sx={{ p: 3 }}>
-              <Typography
-                variant="h6"
-                sx={{ 
-                  mb: 3, 
-                  display: "flex", 
-                  alignItems: "center", 
-                  gap: 1,
-                  color: clinicColors.primaryDark,
-                  fontWeight: 700
-                }}
-              >
-                <Person />
-                Seleccionar Usuario
-              </Typography>
-
-              {/* Selector de usuario */}
-              <FormControl fullWidth sx={{ mb: 3 }}>
-                <InputLabel sx={{
-                  "&.Mui-focused": {
-                    color: clinicColors.primary,
-                    fontWeight: 600
-                  }
-                }}>
-                  Usuario
-                </InputLabel>
-                <Select
-                  value={selectedUserId}
-                  onChange={handleUserChange}
-                  label="Usuario"
-                  sx={{
-                    borderRadius: 2,
-                    transition: 'all 0.3s ease',
-                    '&:hover': {
-                      transform: 'translateY(-2px)',
-                      boxShadow: `0 4px 12px ${clinicColors.alpha.primary10}`
-                    },
-                    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                      borderColor: clinicColors.primary,
-                      borderWidth: 2
-                    },
-                  }}
-                >
-                  {users.map((user) => (
-                    <MenuItem 
-                      key={user.id} 
-                      value={user.id}
-                      sx={{
-                        "&:hover": {
-                          bgcolor: clinicColors.alpha.primary10,
-                        },
-                        "&.Mui-selected": {
-                          bgcolor: clinicColors.alpha.primary20,
-                        },
-                      }}
-                    >
-                      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                        <Avatar
-                          sx={{
-                            width: 28,
-                            height: 28,
-                            fontSize: "0.75rem",
-                            background: clinicColors.gradients.primary,
-                            fontWeight: 700
-                          }}
-                        >
-                          {user.avatar || user.nombreCompleto.split(" ").map((n) => n[0]).join("")}
-                        </Avatar>
-                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                          {user.nombreCompleto}
-                        </Typography>
-                        <Chip 
-                          label={user.rol} 
-                          size="small" 
-                          sx={{
-                            bgcolor: clinicColors.alpha.secondary20,
-                            color: clinicColors.secondary,
-                            fontWeight: 600
-                          }}
-                        />
-                      </Box>
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-
-              {/* Selector de sucursal */}
-              <FormControl fullWidth sx={{ mb: 3 }}>
-                <InputLabel sx={{
-                  "&.Mui-focused": {
-                    color: clinicColors.primary,
-                    fontWeight: 600
-                  }
-                }}>
-                  Sucursal
-                </InputLabel>
-                <Select
-                  value={selectedSucursalId}
-                  onChange={(e) => {
-                    setSelectedSucursalId(e.target.value);
-                    setHasChanges(true);
-                  }}
-                  label="Sucursal"
-                  disabled={!selectedUserId}
-                  startAdornment={
-                    <Business sx={{ color: clinicColors.secondary, ml: 1, mr: 1 }} />
-                  }
-                  sx={{
-                    borderRadius: 2,
-                    transition: 'all 0.3s ease',
-                    '&:hover': {
-                      transform: 'translateY(-2px)',
-                      boxShadow: `0 4px 12px ${clinicColors.alpha.primary10}`
-                    },
-                    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                      borderColor: clinicColors.primary,
-                      borderWidth: 2
-                    },
-                  }}
-                >
-                  {sucursales.map((sucursal) => (
-                    <MenuItem
-                      key={sucursal.sucursal_ID}
-                      value={sucursal.sucursal_ID}
-                      sx={{
-                        "&:hover": {
-                          bgcolor: clinicColors.alpha.primary10,
-                        },
-                        "&.Mui-selected": {
-                          bgcolor: clinicColors.alpha.primary20,
-                        },
-                      }}
-                    >
-                      {sucursal.nombreSucursal}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-
-              {/* Info del usuario */}
-              {currentUser && (
-                <Alert 
-                  severity="info" 
-                  icon={<Info />}
-                  sx={{ 
-                    mb: 3,
-                    borderRadius: 2,
-                    border: `1px solid ${clinicColors.alpha.secondary20}`,
-                    bgcolor: clinicColors.alpha.secondary10
-                  }}
-                >
-                  <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                    <strong>Usuario:</strong> {currentUser.nombreCompleto}
-                    <br />
-                    <strong>Rol:</strong> {currentUser.rol}
-                    <br />
-                    <strong>Sucursal:</strong> {currentUser.sucursal}
-                  </Typography>
-                </Alert>
-              )}
-
-              {hasChanges && (
-                <Alert severity="warning" sx={{ mb: 3, borderRadius: 2 }}>
-                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                    Hay cambios sin guardar
-                  </Typography>
-                </Alert>
-              )}
-
-              {/* Plantillas de roles */}
-              <Typography 
-                variant="h6" 
-                sx={{ 
-                  mb: 2,
-                  color: clinicColors.primaryDark,
-                  fontWeight: 700
-                }}
-              >
-                Plantillas de Roles
-              </Typography>
-
-              {filteredRoles.length === 0 ? (
-                <Alert severity="info" sx={{ borderRadius: 2 }}>
-                  No hay roles disponibles
-                </Alert>
-              ) : (
-                filteredRoles.map((role) => (
-                  <Button
-                    key={role.rol_ID}
-                    fullWidth
-                    variant="outlined"
-                    onClick={() => applyRoleTemplate(role.nombre_Rol)}
-                    disabled={!selectedUserId}
-                    sx={{
-                      mb: 1.5,
-                      justifyContent: "flex-start",
-                      borderRadius: 2,
-                      borderWidth: 2,
-                      borderColor: clinicColors.primary,
-                      color: clinicColors.primary,
-                      fontWeight: 600,
-                      py: 1.5,
-                      transition: 'all 0.3s ease',
-                      "&:hover": {
-                        borderWidth: 2,
-                        bgcolor: clinicColors.alpha.primary10,
-                        transform: 'translateX(4px)'
-                      },
-                      "&.Mui-disabled": {
-                        borderColor: '#ccc',
-                        color: '#999'
-                      }
-                    }}
-                  >
-                    {role.nombre_Rol}
-                  </Button>
-                ))
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Resumen */}
-          <Card sx={{
-            borderRadius: 3,
-            boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
-            border: `1px solid ${clinicColors.alpha.primary10}`
-          }}>
-            <CardContent sx={{ p: 3 }}>
-              <Typography 
-                variant="h6" 
-                sx={{ 
-                  mb: 2,
-                  color: clinicColors.primaryDark,
-                  fontWeight: 700
-                }}
-              >
-                Resumen
-              </Typography>
-              <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
-                <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                  Permisos seleccionados:
-                </Typography>
-                <Chip
-                  label={selectedPermissions}
-                  sx={{
-                    bgcolor: clinicColors.primary,
-                    color: 'white',
-                    fontWeight: 700,
-                    height: 28
-                  }}
-                />
-              </Box>
-              <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                  Total permisos:
-                </Typography>
-                <Typography variant="body2" sx={{ fontWeight: 700, color: clinicColors.primaryDark }}>
-                  {totalPermissions}
-                </Typography>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        {/* Panel derecho: Permisos */}
-        <Grid item xs={12} md={8}>
-          <Card sx={{
-            borderRadius: 3,
-            boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
-            border: `1px solid ${clinicColors.alpha.primary10}`
-          }}>
-            <CardContent sx={{ p: 3 }}>
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  mb: 3,
-                }}
-              >
-                <Typography 
+        {/* Columna izquierda - Ancho fijo */}
+        <Grid item xs={12} md={4} lg={3}>
+          <Box sx={{ width: '100%', maxWidth: 380 }}>
+            {/* Card de Usuario y Sucursal */}
+            <Card sx={{ 
+              mb: 3, 
+              borderRadius: 3,
+              boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
+              border: `1px solid ${clinicColors.alpha.primary10}`
+            }}>
+              <CardContent sx={{ p: 3 }}>
+                <Typography
                   variant="h6"
-                  sx={{
+                  sx={{ 
+                    mb: 3, 
+                    display: "flex", 
+                    alignItems: "center", 
+                    gap: 1,
                     color: clinicColors.primaryDark,
                     fontWeight: 700
                   }}
                 >
-                  Permisos por Módulo
+                  <Person />
+                  Usuario
                 </Typography>
-                <Box sx={{ display: 'flex', gap: 1 }}>
-                  <Button
-                    startIcon={<SelectAll />}
-                    size="small"
-                    onClick={() => {
-                      const allPermissions = new Set();
-                      menuStructure.forEach((modulo) => {
-                        if (modulo.opcion_ID) allPermissions.add(modulo.opcion_ID);
-                        if (modulo.opcionesSubMenu) {
-                          modulo.opcionesSubMenu.forEach((sub) => {
-                            if (sub.opcion_ID) allPermissions.add(sub.opcion_ID);
-                          });
-                        }
-                      });
-                      setUserPermissions(allPermissions);
-                      setHasChanges(true);
-                    }}
-                    sx={{
+
+                {/* Selector de usuario */}
+                <FormControl fullWidth sx={{ mb: 3 }}>
+                  <InputLabel sx={{
+                    "&.Mui-focused": {
                       color: clinicColors.primary,
-                      fontWeight: 600,
-                      "&:hover": {
-                        bgcolor: clinicColors.alpha.primary10,
-                      },
-                    }}
-                  >
-                    Todos
-                  </Button>
-                  <Button
-                    startIcon={<DeselectAll />}
-                    size="small"
-                    onClick={() => {
-                      setUserPermissions(new Set());
-                      setHasChanges(true);
-                    }}
-                    sx={{
-                      color: clinicColors.secondary,
-                      fontWeight: 600,
-                      "&:hover": {
-                        bgcolor: clinicColors.alpha.secondary10,
-                      },
-                    }}
-                  >
-                    Ninguno
-                  </Button>
-                </Box>
-              </Box>
-
-              {loadingMenu ? (
-                <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}>
-                  <CircularProgress sx={{ color: clinicColors.primary }} />
-                </Box>
-              ) : (
-                <>
-                  {menuStructure.map((modulo, index) => {
-                    const modulePermissions = [];
-                    if (modulo.opcion_ID) modulePermissions.push(modulo.opcion_ID);
-                    if (modulo.opcionesSubMenu) {
-                      modulo.opcionesSubMenu.forEach((sub) => {
-                        if (sub.opcion_ID) modulePermissions.push(sub.opcion_ID);
-                      });
+                      fontWeight: 600
                     }
-
-                    const selectedCount = modulePermissions.filter((p) =>
-                      userPermissions.has(p)
-                    ).length;
-                    const isExpanded = expandedPanels.includes(modulo.opcion_ID);
-
-                    return (
-                      <Accordion
-                        key={`modulo-${modulo.opcion_ID}-${index}`}
-                        expanded={isExpanded}
-                        onChange={() => togglePanel(modulo.opcion_ID)}
-                        sx={{ 
-                          mb: 1.5,
-                          borderRadius: 2,
-                          '&:before': {
-                            display: 'none',
+                  }}>
+                    Seleccionar Usuario
+                  </InputLabel>
+                  <Select
+                    value={selectedUserId}
+                    onChange={handleUserChange}
+                    label="Seleccionar Usuario"
+                    sx={{
+                      borderRadius: 2,
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        transform: 'translateY(-2px)',
+                        boxShadow: `0 4px 12px ${clinicColors.alpha.primary10}`
+                      },
+                      "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                        borderColor: clinicColors.primary,
+                        borderWidth: 2
+                      },
+                    }}
+                  >
+                    {users.map((user) => (
+                      <MenuItem 
+                        key={user.id} 
+                        value={user.id}
+                        sx={{
+                          "&:hover": {
+                            bgcolor: clinicColors.alpha.primary10,
                           },
-                          boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-                          border: `1px solid ${clinicColors.alpha.primary10}`
+                          "&.Mui-selected": {
+                            bgcolor: clinicColors.alpha.primary20,
+                          },
                         }}
                       >
-                        <AccordionSummary 
-                          expandIcon={<ExpandMore sx={{ color: clinicColors.primary }} />}
-                          sx={{
-                            '&:hover': {
-                              bgcolor: clinicColors.alpha.primary10,
-                            }
-                          }}
-                        >
-                          <Box
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                          <Avatar
                             sx={{
-                              display: "flex",
-                              alignItems: "center",
-                              width: "100%",
-                              gap: 2
+                              width: 28,
+                              height: 28,
+                              fontSize: "0.75rem",
+                              background: clinicColors.gradients.primary,
+                              fontWeight: 700
                             }}
                           >
-                            <Typography 
-                              variant="subtitle1" 
-                              sx={{ 
-                                flexGrow: 1,
-                                fontWeight: 700,
-                                color: clinicColors.primaryDark
+                            {user.nombreCompleto.split(" ").map((n) => n[0]).join("")}
+                          </Avatar>
+                          <Box sx={{ flexGrow: 1 }}>
+                            <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                              {user.nombreCompleto}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary">
+                              {user.rol}
+                            </Typography>
+                          </Box>
+                        </Box>
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+
+                {/* Selector de sucursal */}
+                <FormControl fullWidth sx={{ mb: 2 }}>
+                  <InputLabel sx={{
+                    "&.Mui-focused": {
+                      color: clinicColors.primary,
+                      fontWeight: 600
+                    }
+                  }}>
+                    Sucursal
+                  </InputLabel>
+                  <Select
+                    value={selectedSucursalId}
+                    onChange={(e) => {
+                      setSelectedSucursalId(e.target.value);
+                      setHasChanges(true);
+                    }}
+                    label="Sucursal"
+                    disabled={!selectedUserId}
+                    startAdornment={
+                      <InputAdornment position="start">
+                        <Business sx={{ color: clinicColors.secondary, ml: 1 }} />
+                      </InputAdornment>
+                    }
+                    sx={{
+                      borderRadius: 2,
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        transform: 'translateY(-2px)',
+                        boxShadow: `0 4px 12px ${clinicColors.alpha.primary10}`
+                      },
+                      "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                        borderColor: clinicColors.primary,
+                        borderWidth: 2
+                      },
+                    }}
+                  >
+                    {sucursales.map((sucursal) => (
+                      <MenuItem
+                        key={sucursal.sucursal_ID}
+                        value={sucursal.sucursal_ID}
+                        sx={{
+                          "&:hover": {
+                            bgcolor: clinicColors.alpha.primary10,
+                          },
+                          "&.Mui-selected": {
+                            bgcolor: clinicColors.alpha.primary20,
+                          },
+                        }}
+                      >
+                        {sucursal.nombreSucursal}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+
+                {/* Info del usuario */}
+                {currentUser && (
+                  <Alert 
+                    severity="info" 
+                    icon={<Info />}
+                    sx={{ 
+                      borderRadius: 2,
+                      border: `1px solid ${clinicColors.alpha.secondary20}`,
+                      bgcolor: clinicColors.alpha.secondary10
+                    }}
+                  >
+                    <Typography variant="body2" sx={{ fontWeight: 500, fontSize: '0.85rem' }}>
+                      <strong>{currentUser.nombreCompleto}</strong>
+                      <br />
+                      {currentUser.rol} • {currentUser.sucursal}
+                    </Typography>
+                  </Alert>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Plantillas de roles */}
+            <Card sx={{ 
+              mb: 3,
+              borderRadius: 3,
+              boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
+              border: `1px solid ${clinicColors.alpha.primary10}`
+            }}>
+              <CardContent sx={{ p: 3 }}>
+                <Typography 
+                  variant="h6" 
+                  sx={{ 
+                    mb: 2,
+                    color: clinicColors.primaryDark,
+                    fontWeight: 700
+                  }}
+                >
+                  Plantillas de Roles
+                </Typography>
+
+                {filteredRoles.length === 0 ? (
+                  <Alert severity="info" sx={{ borderRadius: 2 }}>
+                    No hay roles disponibles
+                  </Alert>
+                ) : (
+                  filteredRoles.map((role) => (
+                    <Button
+                      key={role.rol_ID}
+                      fullWidth
+                      variant="outlined"
+                      onClick={() => applyRoleTemplate(role.nombre_Rol)}
+                      disabled={!selectedUserId}
+                      sx={{
+                        mb: 1.5,
+                        justifyContent: "flex-start",
+                        borderRadius: 2,
+                        borderWidth: 2,
+                        borderColor: clinicColors.primary,
+                        color: clinicColors.primary,
+                        fontWeight: 600,
+                        py: 1.5,
+                        transition: 'all 0.3s ease',
+                        "&:hover": {
+                          borderWidth: 2,
+                          bgcolor: clinicColors.alpha.primary10,
+                          transform: 'translateX(4px)'
+                        },
+                        "&.Mui-disabled": {
+                          borderColor: '#ccc',
+                          color: '#999'
+                        }
+                      }}
+                    >
+                      {role.nombre_Rol}
+                    </Button>
+                  ))
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Resumen */}
+            <Card sx={{
+              borderRadius: 3,
+              boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
+              border: `1px solid ${clinicColors.alpha.primary10}`
+            }}>
+              <CardContent sx={{ p: 3 }}>
+                <Typography 
+                  variant="h6" 
+                  sx={{ 
+                    mb: 3,
+                    color: clinicColors.primaryDark,
+                    fontWeight: 700
+                  }}
+                >
+                  Resumen
+                </Typography>
+
+                {hasChanges && (
+                  <Alert severity="warning" sx={{ mb: 2, borderRadius: 2 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                      Hay cambios sin guardar
+                    </Typography>
+                  </Alert>
+                )}
+
+                <Box sx={{ mb: 3, textAlign: 'center' }}>
+                  <Typography
+                    variant="h3"
+                    sx={{
+                      color: clinicColors.primary,
+                      fontWeight: 800,
+                      mb: 0.5
+                    }}
+                  >
+                    {selectedPermissions}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                    Permisos seleccionados
+                  </Typography>
+                </Box>
+
+                <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                  <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                    Total disponible:
+                  </Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 700, color: clinicColors.primaryDark }}>
+                    {totalPermissions}
+                  </Typography>
+                </Box>
+              </CardContent>
+            </Card>
+          </Box>
+        </Grid>
+
+        {/* Columna derecha - Permisos */}
+        <Grid item xs={12} md={8} lg={9}>
+          <Box sx={{ width: '100%', maxWidth: 1000 }}>
+            <Card sx={{
+              borderRadius: 3,
+              boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
+              border: `1px solid ${clinicColors.alpha.primary10}`
+            }}>
+              <CardContent sx={{ p: 3 }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    mb: 3,
+                  }}
+                >
+                  <Typography 
+                    variant="h6"
+                    sx={{
+                      color: clinicColors.primaryDark,
+                      fontWeight: 700
+                    }}
+                  >
+                    Permisos por Módulo
+                  </Typography>
+                  <Box sx={{ display: 'flex', gap: 1 }}>
+                    <Button
+                      startIcon={<SelectAll />}
+                      size="small"
+                      onClick={() => {
+                        const allPermissions = new Set();
+                        menuStructure.forEach((modulo) => {
+                          if (modulo.opcion_ID) allPermissions.add(modulo.opcion_ID);
+                          if (modulo.opcionesSubMenu) {
+                            modulo.opcionesSubMenu.forEach((sub) => {
+                              if (sub.opcion_ID) allPermissions.add(sub.opcion_ID);
+                            });
+                          }
+                        });
+                        setUserPermissions(allPermissions);
+                        setHasChanges(true);
+                      }}
+                      sx={{
+                        color: clinicColors.primary,
+                        fontWeight: 600,
+                        "&:hover": {
+                          bgcolor: clinicColors.alpha.primary10,
+                        },
+                      }}
+                    >
+                      Todos
+                    </Button>
+                    <Button
+                      startIcon={<DeselectAll />}
+                      size="small"
+                      onClick={() => {
+                        setUserPermissions(new Set());
+                        setHasChanges(true);
+                      }}
+                      sx={{
+                        color: clinicColors.secondary,
+                        fontWeight: 600,
+                        "&:hover": {
+                          bgcolor: clinicColors.alpha.secondary10,
+                        },
+                      }}
+                    >
+                      Ninguno
+                    </Button>
+                  </Box>
+                </Box>
+
+                {loadingMenu ? (
+                  <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}>
+                    <CircularProgress sx={{ color: clinicColors.primary }} />
+                  </Box>
+                ) : (
+                  <>
+                    {menuStructure.map((modulo, index) => {
+                      const modulePermissions = [];
+                      if (modulo.opcion_ID) modulePermissions.push(modulo.opcion_ID);
+                      if (modulo.opcionesSubMenu) {
+                        modulo.opcionesSubMenu.forEach((sub) => {
+                          if (sub.opcion_ID) modulePermissions.push(sub.opcion_ID);
+                        });
+                      }
+
+                      const selectedCount = modulePermissions.filter((p) =>
+                        userPermissions.has(p)
+                      ).length;
+                      const isExpanded = expandedPanels.includes(modulo.opcion_ID);
+
+                      return (
+                        <Accordion
+                          key={`modulo-${modulo.opcion_ID}-${index}`}
+                          expanded={isExpanded}
+                          onChange={() => togglePanel(modulo.opcion_ID)}
+                          sx={{ 
+                            mb: 1.5,
+                            borderRadius: 2,
+                            '&:before': {
+                              display: 'none',
+                            },
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                            border: `1px solid ${clinicColors.alpha.primary10}`
+                          }}
+                        >
+                          <AccordionSummary 
+                            expandIcon={<ExpandMore sx={{ color: clinicColors.primary }} />}
+                            sx={{
+                              '&:hover': {
+                                bgcolor: clinicColors.alpha.primary10,
+                              }
+                            }}
+                          >
+                            <Box
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                width: "100%",
+                                gap: 2
                               }}
                             >
-                              {modulo.nombreOpcion}
-                            </Typography>
-                            <Chip
-                              label={`${selectedCount}/${modulePermissions.length}`}
-                              size="small"
-                              sx={{
-                                bgcolor: selectedCount > 0 ? clinicColors.primary : '#e0e0e0',
-                                color: selectedCount > 0 ? 'white' : '#666',
-                                fontWeight: 700,
-                                minWidth: 50
-                              }}
-                            />
-                            <Switch
-                              checked={selectedCount === modulePermissions.length}
-                              onChange={(e) => {
-                                e.stopPropagation();
-                                toggleModulePermissions(modulo);
-                              }}
-                              onClick={(e) => e.stopPropagation()}
-                              sx={{
-                                '& .MuiSwitch-switchBase.Mui-checked': {
-                                  color: clinicColors.primary,
-                                },
-                                '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
-                                  backgroundColor: clinicColors.primary,
-                                },
-                              }}
-                            />
-                          </Box>
-                        </AccordionSummary>
-                        <AccordionDetails sx={{ bgcolor: '#fafafa' }}>
-                          <Grid container spacing={1}>
-                            {/* Checkbox del módulo principal */}
-                            <Grid item xs={12}>
-                              <FormControlLabel
-                                control={
-                                  <Checkbox
-                                    checked={userPermissions.has(modulo.opcion_ID)}
-                                    onChange={() => togglePermission(modulo.opcion_ID)}
-                                    sx={{
-                                      '&.Mui-checked': {
-                                        color: clinicColors.primary,
-                                      },
-                                    }}
-                                  />
-                                }
-                                label={
-                                  <Box>
-                                    <Typography variant="body2" fontWeight={700}>
-                                      {modulo.nombreOpcion} (Módulo)
-                                    </Typography>
-                                    <Typography variant="caption" color="text.secondary">
-                                      {modulo.descripcion}
-                                    </Typography>
-                                  </Box>
-                                }
+                              <Typography 
+                                variant="subtitle1" 
+                                sx={{ 
+                                  flexGrow: 1,
+                                  fontWeight: 700,
+                                  color: clinicColors.primaryDark
+                                }}
+                              >
+                                {modulo.nombreOpcion}
+                              </Typography>
+                              <Chip
+                                label={`${selectedCount}/${modulePermissions.length}`}
+                                size="small"
+                                sx={{
+                                  bgcolor: selectedCount > 0 ? clinicColors.primary : '#e0e0e0',
+                                  color: selectedCount > 0 ? 'white' : '#666',
+                                  fontWeight: 700,
+                                  minWidth: 50
+                                }}
                               />
+                              <Switch
+                                checked={selectedCount === modulePermissions.length}
+                                onChange={(e) => {
+                                  e.stopPropagation();
+                                  toggleModulePermissions(modulo);
+                                }}
+                                onClick={(e) => e.stopPropagation()}
+                                sx={{
+                                  '& .MuiSwitch-switchBase.Mui-checked': {
+                                    color: clinicColors.primary,
+                                  },
+                                  '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                                    backgroundColor: clinicColors.primary,
+                                  },
+                                }}
+                              />
+                            </Box>
+                          </AccordionSummary>
+                          <AccordionDetails sx={{ bgcolor: '#fafafa' }}>
+                            <Grid container spacing={1}>
+                              {/* Checkbox del módulo principal */}
+                              <Grid item xs={12}>
+                                <FormControlLabel
+                                  control={
+                                    <Checkbox
+                                      checked={userPermissions.has(modulo.opcion_ID)}
+                                      onChange={() => togglePermission(modulo.opcion_ID)}
+                                      sx={{
+                                        '&.Mui-checked': {
+                                          color: clinicColors.primary,
+                                        },
+                                      }}
+                                    />
+                                  }
+                                  label={
+                                    <Box>
+                                      <Typography variant="body2" fontWeight={700}>
+                                        {modulo.nombreOpcion} (Módulo)
+                                      </Typography>
+                                      <Typography variant="caption" color="text.secondary">
+                                        {modulo.descripcion}
+                                      </Typography>
+                                    </Box>
+                                  }
+                                />
+                              </Grid>
+
+                              {/* Subopciones */}
+                              {modulo.opcionesSubMenu &&
+                                modulo.opcionesSubMenu.length > 0 &&
+                                modulo.opcionesSubMenu.map((subOpcion, subIndex) => (
+                                  <Grid
+                                    item
+                                    xs={12}
+                                    key={`subopcion-${subOpcion.opcion_ID}-${subIndex}`}
+                                  >
+                                    <FormControlLabel
+                                      control={
+                                        <Checkbox
+                                          checked={userPermissions.has(subOpcion.opcion_ID)}
+                                          onChange={() => togglePermission(subOpcion.opcion_ID)}
+                                          sx={{
+                                            '&.Mui-checked': {
+                                              color: clinicColors.secondary,
+                                            },
+                                          }}
+                                        />
+                                      }
+                                      label={
+                                        <Box sx={{ ml: 2 }}>
+                                          <Typography variant="body2" fontWeight={600}>
+                                            {subOpcion.nombreOpcion}
+                                          </Typography>
+                                          <Typography variant="caption" color="text.secondary">
+                                            {subOpcion.descripcion}
+                                          </Typography>
+                                        </Box>
+                                      }
+                                    />
+                                  </Grid>
+                                ))}
                             </Grid>
+                          </AccordionDetails>
+                        </Accordion>
+                      );
+                    })}
+                  </>
+                )}
+              </CardContent>
+            </Card>
 
-                            {/* Subopciones */}
-                            {modulo.opcionesSubMenu &&
-                              modulo.opcionesSubMenu.length > 0 &&
-                              modulo.opcionesSubMenu.map((subOpcion, subIndex) => (
-                                <Grid
-                                  item
-                                  xs={12}
-                                  key={`subopcion-${subOpcion.opcion_ID}-${subIndex}`}
-                                >
-                                  <FormControlLabel
-                                    control={
-                                      <Checkbox
-                                        checked={userPermissions.has(subOpcion.opcion_ID)}
-                                        onChange={() => togglePermission(subOpcion.opcion_ID)}
-                                        sx={{
-                                          '&.Mui-checked': {
-                                            color: clinicColors.secondary,
-                                          },
-                                        }}
-                                      />
-                                    }
-                                    label={
-                                      <Box sx={{ ml: 2 }}>
-                                        <Typography variant="body2" fontWeight={600}>
-                                          {subOpcion.nombreOpcion}
-                                        </Typography>
-                                        <Typography variant="caption" color="text.secondary">
-                                          {subOpcion.descripcion}
-                                        </Typography>
-                                      </Box>
-                                    }
-                                  />
-                                </Grid>
-                              ))}
-                          </Grid>
-                        </AccordionDetails>
-                      </Accordion>
-                    );
-                  })}
-                </>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Botones de acción */}
-          <Box sx={{ display: "flex", justifyContent: "center", gap: 2, mt: 3 }}>
-            <Button
-              variant="outlined"
-              onClick={onCancel}
-              startIcon={<Cancel />}
-              size="large"
-              sx={{
-                borderColor: clinicColors.secondary,
-                color: clinicColors.secondary,
-                borderWidth: 2,
-                px: 4,
-                py: 1.5,
-                fontWeight: 700,
-                borderRadius: 2,
-                "&:hover": {
+            {/* Botones de acción */}
+            <Box sx={{ display: "flex", justifyContent: "center", gap: 2, mt: 3 }}>
+              <Button
+                variant="outlined"
+                onClick={onCancel}
+                startIcon={<Cancel />}
+                size="large"
+                sx={{
+                  borderColor: clinicColors.secondary,
+                  color: clinicColors.secondary,
                   borderWidth: 2,
-                  borderColor: clinicColors.secondaryDark,
-                  bgcolor: clinicColors.alpha.secondary10,
-                  transform: 'translateY(-2px)'
-                },
-                transition: 'all 0.3s ease'
-              }}
-            >
-              Cancelar
-            </Button>
-            <Button
-              variant="contained"
-              startIcon={
-                loading ? (
-                  <CircularProgress size={20} color="inherit" />
-                ) : (
-                  <Save />
-                )
-              }
-              onClick={handleSavePermissions}
-              disabled={!hasChanges || !selectedUserId || loading}
-              size="large"
-              sx={{
-                background: `linear-gradient(135deg, ${clinicColors.primary} 0%, ${clinicColors.primaryLight} 100%)`,
-                color: "white",
-                px: 5,
-                py: 1.5,
-                fontWeight: 700,
-                borderRadius: 2,
-                boxShadow: `0 8px 24px ${clinicColors.alpha.primary30}`,
-                "&:hover": {
-                  background: `linear-gradient(135deg, ${clinicColors.primaryDark} 0%, ${clinicColors.primary} 100%)`,
-                  transform: "translateY(-2px)",
-                  boxShadow: `0 12px 32px ${clinicColors.alpha.primary30}`,
-                },
-                "&.Mui-disabled": {
-                  background: "rgba(0, 0, 0, 0.12)",
-                  color: "rgba(0, 0, 0, 0.26)",
-                },
-                transition: 'all 0.3s ease'
-              }}
-            >
-              {loading ? "Guardando..." : "Guardar Permisos"}
-            </Button>
+                  px: 4,
+                  py: 1.5,
+                  fontWeight: 700,
+                  borderRadius: 2,
+                  "&:hover": {
+                    borderWidth: 2,
+                    borderColor: clinicColors.secondaryDark,
+                    bgcolor: clinicColors.alpha.secondary10,
+                    transform: 'translateY(-2px)'
+                  },
+                  transition: 'all 0.3s ease'
+                }}
+              >
+                Cancelar
+              </Button>
+              <Button
+                variant="contained"
+                startIcon={
+                  loading ? (
+                    <CircularProgress size={20} color="inherit" />
+                  ) : (
+                    <Save />
+                  )
+                }
+                onClick={handleSavePermissions}
+                disabled={!hasChanges || !selectedUserId || loading}
+                size="large"
+                sx={{
+                  background: `linear-gradient(135deg, ${clinicColors.primary} 0%, ${clinicColors.primaryLight} 100%)`,
+                  color: "white",
+                  px: 5,
+                  py: 1.5,
+                  fontWeight: 700,
+                  borderRadius: 2,
+                  boxShadow: `0 8px 24px ${clinicColors.alpha.primary30}`,
+                  "&:hover": {
+                    background: `linear-gradient(135deg, ${clinicColors.primaryDark} 0%, ${clinicColors.primary} 100%)`,
+                    transform: "translateY(-2px)",
+                    boxShadow: `0 12px 32px ${clinicColors.alpha.primary30}`,
+                  },
+                  "&.Mui-disabled": {
+                    background: "rgba(0, 0, 0, 0.12)",
+                    color: "rgba(0, 0, 0, 0.26)",
+                  },
+                  transition: 'all 0.3s ease'
+                }}
+              >
+                {loading ? "Guardando..." : "Guardar Permisos"}
+              </Button>
+            </Box>
           </Box>
         </Grid>
       </Grid>
