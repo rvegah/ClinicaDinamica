@@ -117,7 +117,7 @@ export const AuthProvider = ({ children }) => {
     console.log('✅ Sesión cerrada');
     
     // 🔥 CRÍTICO: Redirigir al login después de cerrar sesión
-    window.location.href = '/';
+    window.location.href = '/clinica-farma/';
   };
 
   /**
