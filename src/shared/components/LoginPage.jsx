@@ -303,7 +303,7 @@ function LoginPage() {
                   color: clinicColors.light.text.secondary,
                 }}
               >
-                Ingresa tus credenciales para acceder al sistema -RVH
+                Ingresa tus credenciales para acceder al sistema
               </Typography>
 
               <Box component="form" onSubmit={handleLogin}>
