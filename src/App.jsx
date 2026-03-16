@@ -14,6 +14,7 @@ import DashboardLayout from "./shared/components/DashboardLayout";
 import Dashboard from "./shared/components/Dashboard";
 import UserManagementPage from "./modules/user-management/pages/UserManagementPage";
 import EditProfilePage from "./modules/user-management/components/EditProfilePage";
+import FacturacionPage from './modules/facturacion/pages/FacturacionPage';
 
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 
@@ -55,6 +56,7 @@ function ProtectedRoutes() {
             <Route path="/users/*" element={<UserManagementPage />} />
             <Route path="/profile" element={<EditProfilePage />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            <Route path="/facturacion/nueva" element={<FacturacionPage />} />
           </Routes>
         </DashboardLayout>
       </DashboardRedirect>
