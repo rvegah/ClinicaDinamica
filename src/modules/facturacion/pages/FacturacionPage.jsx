@@ -405,7 +405,11 @@ export default function FacturacionPage() {
         construirRequest(codigoExcepcion),
         1,
       );
-      setFacturaEmitida(factura);
+      setFacturaEmitida({
+        ...factura,
+        razonSocialCliente: razonSocial,
+        nitCliente: nitCliente,
+      });
       enqueueSnackbar(
         isContingencia
           ? "✅ Factura guardada en contingencia"
@@ -413,7 +417,7 @@ export default function FacturacionPage() {
         { variant: "success" },
       );
       try {
-        await imprimirFactura(factura.id, formatoPdf);
+        await imprimirFactura(factura.facturaId, formatoPdf);
       } catch {}
     } catch (err) {
       if (err.code === "INVALID_NIT") {
@@ -453,6 +457,8 @@ export default function FacturacionPage() {
     setHoraContingencia("");
     setDetalles([]);
     setTipoCliente("normal");
+    setSector(1);
+    setTipoDocumento(1);
   };
 
   const usarFechaActual = () => {
@@ -559,7 +565,7 @@ export default function FacturacionPage() {
               ))}
             </Box>
             <Box sx={{ display: "flex", gap: 1.5 }}>
-              <Button
+              {/*<Button
                 fullWidth
                 variant="outlined"
                 startIcon={<Print />}
@@ -575,7 +581,7 @@ export default function FacturacionPage() {
                 }}
               >
                 Reimprimir
-              </Button>
+              </Button>*/}
               <Button
                 fullWidth
                 variant="contained"
@@ -739,6 +745,31 @@ export default function FacturacionPage() {
             {eventoActivo.eventoId}:{" "}
             {eventoActivo.descripcion || "Evento activo"}
           </Typography>
+          {eventoActivo.fechaInicio && (
+            <Typography variant="body2" sx={{ mt: 0.5 }}>
+              <strong>Desde:</strong>{" "}
+              {new Date(eventoActivo.fechaInicio).toLocaleString("es-BO", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+              {eventoActivo.fechaFin && (
+                <>
+                  {" "}
+                  — <strong>Hasta:</strong>{" "}
+                  {new Date(eventoActivo.fechaFin).toLocaleString("es-BO", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </>
+              )}
+            </Typography>
+          )}
           {isContingencia && (
             <Typography variant="body2" sx={{ mt: 0.5 }}>
               <strong>MODO CONTINGENCIA:</strong> Debe ingresar el número de
@@ -1040,7 +1071,7 @@ export default function FacturacionPage() {
                 Cliente
               </Typography>
               <Grid container spacing={2}>
-                <Grid item xs={12} sm={6}>
+                <Grid item xs={12} sm={9}>
                   <TextField
                     fullWidth
                     size="small"
@@ -1052,7 +1083,7 @@ export default function FacturacionPage() {
                     placeholder="Ej: 123456789"
                   />
                 </Grid>
-                <Grid item xs={12} sm={6}>
+                <Grid item xs={12} sm={3}>
                   <TextField
                     fullWidth
                     size="small"
@@ -1062,6 +1093,7 @@ export default function FacturacionPage() {
                       setComplemento(e.target.value.toUpperCase())
                     }
                     placeholder="Ej: 1A"
+                    inputProps={{ maxLength: 10 }}
                   />
                 </Grid>
                 <Grid item xs={12}>
