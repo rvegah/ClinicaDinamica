@@ -473,7 +473,7 @@ const DashboardLayout = ({ children, currentUser }) => {
               variant="caption"
               sx={{ color: "rgba(255,255,255,0.7)", display: "block" }}
             >
-              © 2025 CONSULTORIO MÉDICO
+              © 2026 CONSULTORIO MÉDICO
             </Typography>
             <Typography
               variant="caption"
