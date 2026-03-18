@@ -27,6 +27,7 @@ import BuscarCitasPage from "./modules/agendamiento/pages/BuscarCitasPage";
 
 import SignosVitalesPage from "./modules/consulta/pages/SignosVitalesPage";
 import ConsultaMedicaPage from "./modules/consulta/pages/ConsultaMedicaPage";
+import ServicioEnfermeriaPage from "./modules/enfermeria/pages/ServicioEnfermeriaPage";
 
 // Redirección post-login
 function DashboardRedirect({ children }) {
@@ -115,7 +116,8 @@ function ProtectedRoutes() {
             />
 
             <Route path="/consulta/signos-vitales" element={<SignosVitalesPage />} />
-            <Route path="/consulta/registrar" element={<ConsultaMedicaPage />} />
+            <Route path="/consulta/registrar" element={<ConsultaMedicaPage />} />            
+            <Route path="/emergencias/atencion" element={<ServicioEnfermeriaPage />} />
 
             {/* Wildcard SIEMPRE AL FINAL */}
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
