@@ -25,6 +25,9 @@ import EditarPacientePage from "./modules/patients/pages/EditarPacientePage";
 import AgendarCitaPage from "./modules/agendamiento/pages/AgendarCitaPage";
 import BuscarCitasPage from "./modules/agendamiento/pages/BuscarCitasPage";
 
+import SignosVitalesPage from "./modules/consulta/pages/SignosVitalesPage";
+import ConsultaMedicaPage from "./modules/consulta/pages/ConsultaMedicaPage";
+
 // Redirección post-login
 function DashboardRedirect({ children }) {
   const navigate = useNavigate();
@@ -110,6 +113,9 @@ function ProtectedRoutes() {
               path="/agendamiento/cancelar"
               element={<BuscarCitasPage />}
             />
+
+            <Route path="/consulta/signos-vitales" element={<SignosVitalesPage />} />
+            <Route path="/consulta/registrar" element={<ConsultaMedicaPage />} />
 
             {/* Wildcard SIEMPRE AL FINAL */}
             <Route path="*" element={<Navigate to="/dashboard" replace />} />

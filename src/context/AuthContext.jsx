@@ -4,6 +4,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import authService from '../services/api/authService';
 import menuService from '../services/api/menuService';
+import atencionMedicaService from '../services/api/atencionMedicaService';
 
 // Crear el contexto
 const AuthContext = createContext();
@@ -77,6 +78,21 @@ export const AuthProvider = ({ children }) => {
       // 3. Guardar en sessionStorage
       authService.saveUser(loginResult.user);
       menuService.savePermissions(userPermissions);
+
+      // 3b. Obtener personalMedico_ID y enriquecer el user      
+      try {
+        const empleadoId = loginResult.user.empleado_ID;
+        if (empleadoId) {
+          const personalRes = await atencionMedicaService.getPersonalMedico(empleadoId);
+          if (personalRes.exitoso && personalRes.datos) {
+            loginResult.user.personalMedico_ID = personalRes.datos.personalMedico_ID;
+          }
+        }
+      } catch (personalErr) {
+        console.warn('⚠️ No se pudo obtener personalMedico_ID:', personalErr);
+      }
+      // Re-guardar user ya enriquecido con personalMedico_ID
+      authService.saveUser(loginResult.user);
 
       // 4. Actualizar estado
       setUser(loginResult.user);
