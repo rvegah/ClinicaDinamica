@@ -1,4 +1,4 @@
-// src/config/iconMapper.js - VERSIÓN MEJORADA PARA CONSULTORIO MÉDICO DINAMAX
+// src/config/iconMapper.js - VERSIÓN MEJORADA PARA CENTRO MÉDICO DINAMAX
 
 import {
   Dashboard,
@@ -62,7 +62,7 @@ import {
 
 /**
  * Mapa de nombres de íconos del API a componentes MUI
- * CONSULTORIO MÉDICO DINAMAX - Versión Mejorada
+ * CENTRO MÉDICO DINAMAX - Versión Mejorada
  */
 const iconMap = {
   // ============================================

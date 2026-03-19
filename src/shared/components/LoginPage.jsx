@@ -1,4 +1,4 @@
-// src/shared/components/LoginPage.jsx - VERSIÓN MEJORADA CONSULTORIO MÉDICO DINAMAX
+// src/shared/components/LoginPage.jsx - VERSIÓN MEJORADA CENTRO MÉDICO DINAMAX
 
 import React, { useState } from 'react';
 import {
@@ -470,7 +470,7 @@ function LoginPage() {
                     fontWeight: 500,
                   }}
                 >
-                  Consultorio Médico DINAMAX S.R.L.
+                  Centro Médico DINAMAX S.R.L.
                 </Typography>
                 <Typography
                   variant="caption"

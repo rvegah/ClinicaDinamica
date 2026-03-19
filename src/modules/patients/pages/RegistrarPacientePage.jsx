@@ -197,7 +197,7 @@ export default function RegistrarPacientePage() {
             Registrar Paciente
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Nuevo ingreso al consultorio médico
+            Nuevo ingreso al centro médico
           </Typography>
         </Box>
       </Box>

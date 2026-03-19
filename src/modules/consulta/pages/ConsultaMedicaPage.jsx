@@ -886,49 +886,65 @@ function FormularioConsulta({ cita, consultaMedica, onFinalizar }) {
         <CardContent sx={{ p: 2.5 }}>
           {/* TAB 0 — DATOS CLÍNICOS */}
           <TabPanel value={tab} index={0}>
-            <Grid container spacing={2}>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
               {[
-                { k: "enfermedadActual", label: "Enfermedad Actual", rows: 2 },
+                {
+                  k: "enfermedadActual",
+                  label: "Enfermedad Actual",
+                  placeholder: "Describa la enfermedad actual del paciente...",
+                },
                 {
                   k: "diagnosticoClinico",
                   label: "Diagnóstico Clínico",
-                  rows: 2,
+                  placeholder: "Diagnóstico clínico preliminar...",
                 },
                 {
                   k: "revisionSistemas",
                   label: "Revisión de Sistemas",
-                  rows: 2,
+                  placeholder: "Cardiovascular, respiratorio, digestivo...",
                 },
-                { k: "examenFisico", label: "Examen Físico", rows: 2 },
-                { k: "planTratamiento", label: "Plan de Tratamiento", rows: 2 },
-                { k: "observaciones", label: "Observaciones", rows: 2 },
-              ].map(({ k, label, rows }) => (
-                <Grid item xs={12} sm={6} key={k}>
-                  <TextField
-                    fullWidth
-                    size="small"
-                    label={label}
-                    value={clinica[k]}
-                    onChange={(e) => cambiarClinica(k, e.target.value)}
-                    multiline
-                    rows={rows}
-                  />
-                </Grid>
-              ))}
-              <Grid item xs={12} sm={6}>
+                {
+                  k: "examenFisico",
+                  label: "Examen Físico",
+                  placeholder: "PA, FC, FR, temperatura, hallazgos...",
+                },
+                {
+                  k: "planTratamiento",
+                  label: "Plan de Tratamiento",
+                  placeholder:
+                    "Medicamentos indicados, procedimientos, derivaciones...",
+                },
+                {
+                  k: "observaciones",
+                  label: "Observaciones",
+                  placeholder: "Observaciones adicionales...",
+                },
+              ].map(({ k, label, placeholder }) => (
                 <TextField
+                  key={k}
                   fullWidth
                   size="small"
-                  label="Próxima Cita (opcional)"
-                  type="date"
-                  value={clinica.proximaCita}
-                  onChange={(e) =>
-                    cambiarClinica("proximaCita", e.target.value)
-                  }
-                  InputLabelProps={{ shrink: true }}
+                  label={label}
+                  value={clinica[k]}
+                  onChange={(e) => cambiarClinica(k, e.target.value)}
+                  multiline
+                  rows={2}
+                  placeholder={placeholder}
                 />
-              </Grid>
-            </Grid>
+              ))}
+
+              <TextField
+                fullWidth
+                size="small"
+                label="Próxima Cita (obligatorio)"
+                type="date"
+                value={clinica.proximaCita}
+                onChange={(e) => cambiarClinica("proximaCita", e.target.value)}
+                InputLabelProps={{ shrink: true }}
+                helperText="Fecha de control sugerida"
+                sx={{ maxWidth: 220 }}
+              />
+            </Box>
           </TabPanel>
 
           {/* TAB 1 — DIAGNÓSTICOS CIE-10 */}
@@ -1707,76 +1723,113 @@ function PantallaExito({ datos, onNueva }) {
       : "<li>No se realizaron procedimientos</li>";
 
     w.document.write(`
-      <html><head><title>Hoja de Consulta Médica</title><style>
-        * { margin:0; padding:0; box-sizing:border-box; }
-        body { font-family: Arial, sans-serif; font-size: 12px; padding: 20px; }
-        .header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #000; pb: 10px; }
-        .header h2 { font-size: 16px; text-transform: uppercase; font-weight: bold; }
-        .header p { font-size: 12px; margin-top: 4px; }
-        .section { margin-bottom: 14px; }
-        .section h3 { font-size: 13px; font-weight: bold; text-transform: uppercase;
-          background: #f0f0f0; padding: 4px 8px; border-left: 3px solid #333; margin-bottom: 6px; }
-        .field { margin-bottom: 6px; }
-        .field label { font-weight: bold; font-size: 11px; color: #555; }
-        .field p { font-size: 12px; border-bottom: 1px solid #ddd; padding-bottom: 3px; min-height: 18px; }
-        table { width: 100%; border-collapse: collapse; font-size: 11px; }
-        th { background: #333; color: white; padding: 5px 8px; text-align: left; }
-        td { padding: 4px 8px; border-bottom: 1px solid #eee; }
-        .firma { margin-top: 60px; display: flex; justify-content: flex-end; }
-        .firma-box { text-align: center; width: 200px; }
-        .firma-line { border-top: 1px solid #000; margin-bottom: 4px; }
-        @media print { button { display: none; } }
-      </style></head><body>
-      <div class="header">
-        <h2>CONSULTORIO MÉDICO DINAMAX</h2>
-        <p>HISTORIA CLÍNICA — HOJA DE CONSULTA</p>
-        <p>N° Cita: ${cita.numeroCita} | Fecha: ${cita.fechaCita} | Médico: ${medico}</p>
-      </div>
+  <html>
+  <head>
+    <title>Hoja de Consulta Médica</title>
+    <style>
+      * { margin:0; padding:0; box-sizing:border-box; }
+      body { font-family: Arial, sans-serif; font-size: 12px; padding: 24px; max-width: 720px; }
+      .header-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; border-bottom:3px solid #e65c00; padding-bottom:10px; }
+      .logo-area { display:flex; align-items:center; gap:10px; }
+      .logo-circle { width:56px; height:56px; border-radius:50%; background:linear-gradient(135deg,#e65c00,#003366); display:flex; align-items:center; justify-content:center; }
+      .logo-text { font-size:22px; font-weight:900; color:#e65c00; letter-spacing:1px; }
+      .srl { font-size:10px; color:#e65c00; font-weight:700; }
+      .doc-title { font-size:16px; font-weight:900; color:#333; text-transform:uppercase; }
+      .doc-sub { font-size:11px; color:#555; margin-top:2px; }
+      .info-block { margin:10px 0 6px; font-size:11px; line-height:1.8; }
+      .info-block span { font-weight:700; }
+      .section-title { font-size:11px; font-weight:700; text-transform:uppercase;
+        background:#f0f0f0; padding:4px 8px; border-left:3px solid #e65c00; margin:12px 0 6px; }
+      .field-grid { display:grid; grid-template-columns:1fr 1fr; gap:6px 20px; margin-bottom:4px; }
+      .field { font-size:11px; }
+      .field label { font-weight:700; color:#555; display:block; font-size:10px; margin-bottom:1px; }
+      .field p { border-bottom:1px solid #ddd; padding-bottom:3px; min-height:18px; }
+      .field.full { grid-column: span 2; }
+      table { width:100%; border-collapse:collapse; font-size:11px; margin-top:4px; }
+      th { background:#003366; color:white; padding:5px 8px; text-align:left; font-size:10px; text-transform:uppercase; }
+      td { padding:5px 8px; border-bottom:1px solid #eee; }
+      tr:nth-child(even) td { background:#f9f9f9; }
+      .firma-section { display:flex; justify-content:space-between; align-items:flex-end; margin-top:50px; }
+      .firma-box { text-align:center; }
+      .firma-line { border-top:1px solid #333; width:160px; margin:0 auto 4px; }
+      .divider { border-top:2px solid #333; margin:16px 0; }
+      @media print { button { display:none!important; } }
+    </style>
+  </head>
+  <body>
 
-      <div class="section">
-        <h3>Datos del Paciente</h3>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-          <div class="field"><label>Paciente:</label><p>${cita.nombrePaciente}</p></div>
-          <div class="field"><label>Especialidad:</label><p>${cita.nombreEspecialidad}</p></div>
-          <div class="field"><label>Tipo Consulta:</label><p>${cita.nombreTipoConsulta}</p></div>
-          <div class="field"><label>Hora:</label><p>${(cita.horaInicio || "").slice(0, 5)}</p></div>
-          <div class="field"><label>Motivo:</label><p>${cita.motivoConsulta || "—"}</p></div>
+    <div class="header-top">
+      <div class="logo-area">
+        <div class="logo-circle">
+          <span style="color:white;font-weight:900;font-size:13px;">DX</span>
+        </div>
+        <div>
+          <div style="font-size:8px;color:#003366;font-weight:700;text-transform:uppercase;letter-spacing:1px;">CENTRO MÉDICO CON INTERNACION TRANSITORIA</div>
+          <div class="logo-text">DINAMAX <span class="srl">S.R.L.</span></div>
         </div>
       </div>
-
-      <div class="section">
-        <h3>Datos Clínicos</h3>
-        <div class="field"><label>Enfermedad Actual:</label><p>${clinica.enfermedadActual || "—"}</p></div>
-        <div class="field"><label>Diagnóstico Clínico:</label><p>${clinica.diagnosticoClinico || "—"}</p></div>
-        <div class="field"><label>Revisión de Sistemas:</label><p>${clinica.revisionSistemas || "—"}</p></div>
-        <div class="field"><label>Examen Físico:</label><p>${clinica.examenFisico || "—"}</p></div>
-        <div class="field"><label>Plan de Tratamiento:</label><p>${clinica.planTratamiento || "—"}</p></div>
-        <div class="field"><label>Observaciones:</label><p>${clinica.observaciones || "—"}</p></div>
-        ${clinica.proximaCita ? `<div class="field"><label>Próxima Cita:</label><p>${clinica.proximaCita}</p></div>` : ""}
+      <div style="text-align:right;">
+        <div class="doc-title">Historia Clínica</div>
+        <div class="doc-sub">Hoja de Consulta Médica</div>
+        <div style="font-size:10px;color:#555;margin-top:2px;">N° Cita: <strong>${cita.numeroCita}</strong></div>
       </div>
+    </div>
 
-      <div class="section">
-        <h3>Diagnósticos CIE-10</h3>
-        <table><tr><th>Código</th><th>Diagnóstico</th><th>Descripción</th><th>Tipo</th><th>Principal</th></tr>
-          ${diagsHtml}
-        </table>
+    <div class="info-block">
+      <div><span>Fecha:</span> ${cita.fechaCita} &nbsp;&nbsp; <span>Hora:</span> ${(cita.horaInicio || "").slice(0, 5)} &nbsp;&nbsp; <span>Médico:</span> ${medico}</div>
+      <div><span>Paciente:</span> ${cita.nombrePaciente} &nbsp;&nbsp; <span>Especialidad:</span> ${cita.nombreEspecialidad} &nbsp;&nbsp; <span>Tipo:</span> ${cita.nombreTipoConsulta}</div>
+      ${cita.motivoConsulta ? `<div><span>Motivo:</span> ${cita.motivoConsulta}</div>` : ""}
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="section-title">Datos Clínicos</div>
+    <div class="field-grid">
+      <div class="field"><label>Enfermedad Actual</label><p>${clinica.enfermedadActual || "—"}</p></div>
+      <div class="field"><label>Diagnóstico Clínico</label><p>${clinica.diagnosticoClinico || "—"}</p></div>
+      <div class="field"><label>Revisión de Sistemas</label><p>${clinica.revisionSistemas || "—"}</p></div>
+      <div class="field"><label>Examen Físico</label><p>${clinica.examenFisico || "—"}</p></div>
+      <div class="field full"><label>Plan de Tratamiento</label><p>${clinica.planTratamiento || "—"}</p></div>
+      <div class="field full"><label>Observaciones</label><p>${clinica.observaciones || "—"}</p></div>
+      ${clinica.proximaCita ? `<div class="field"><label>Próxima Cita</label><p>${clinica.proximaCita}</p></div>` : ""}
+    </div>
+
+    <div class="section-title">Diagnósticos CIE-10</div>
+    <table>
+      <thead>
+        <tr><th>Código</th><th>Diagnóstico</th><th>Descripción</th><th>Tipo</th><th>Principal</th></tr>
+      </thead>
+      <tbody>${diagsHtml}</tbody>
+    </table>
+
+    ${
+      procedimientos.length
+        ? `
+    <div class="section-title">Procedimientos</div>
+    <ul style="padding-left:16px;font-size:11px;line-height:1.8;">${procHtml}</ul>`
+        : ""
+    }
+
+    <div class="divider"></div>
+
+    <div class="firma-section">
+      <div class="firma-box">
+        <div class="firma-line"></div>
+        <p style="font-size:11px;font-weight:700;">${medico}</p>
+        <p style="font-size:10px;color:#666;">Médico Responsable — Firma y Sello</p>
       </div>
-
-      ${procedimientos.length ? `<div class="section"><h3>Procedimientos</h3><ul>${procHtml}</ul></div>` : ""}
-
-      <div class="firma">
-        <div class="firma-box">
-          <div class="firma-line"></div>
-          <p style="font-weight:bold">${medico}</p>
-          <p style="font-size:10px;color:#666">Médico Responsable</p>
-          <p style="font-size:10px;margin-top:4px">Firma y Sello</p>
-        </div>
+      <div class="firma-box">
+        <div class="firma-line"></div>
+        <p style="font-size:11px;">Firma del Paciente</p>
       </div>
+    </div>
 
-      <br/><button onclick="window.print()" style="width:100%;padding:10px;background:#2563eb;color:white;border:none;border-radius:4px;cursor:pointer;font-size:13px;font-weight:bold;">
-        🖨️ Imprimir Hoja de Consulta
-      </button>
-      </body></html>`);
+    <br/>
+    <button onclick="window.print()" style="width:100%;padding:10px;background:#003366;color:white;border:none;border-radius:4px;cursor:pointer;font-size:13px;font-weight:bold;margin-top:8px;">
+      🖨️ Imprimir Hoja de Consulta
+    </button>
+  </body>
+  </html>`);
     w.document.close();
     w.focus();
     setTimeout(() => w.print(), 300);
@@ -1796,28 +1849,96 @@ function PantallaExito({ datos, onNueva }) {
       )
       .join("");
     w.document.write(`
-      <html><head><title>Órdenes Médicas</title><style>
-        body { font-family: Arial, sans-serif; font-size: 12px; padding: 24px; }
-        .header { text-align: center; border-bottom: 2px solid #000; margin-bottom: 16px; padding-bottom: 10px; }
-        .firma { margin-top: 80px; text-align: center; }
-        .firma-line { border-top: 1px solid #000; width: 200px; margin: 0 auto 4px; }
-        @media print { button { display: none; } }
-      </style></head><body>
-      <div class="header">
-        <h2 style="font-size:15px;text-transform:uppercase;">CONSULTORIO MÉDICO DINAMAX</h2>
-        <p style="font-size:13px;font-weight:bold;margin-top:4px;">ÓRDENES MÉDICAS</p>
-        <p>Paciente: ${cita.nombrePaciente} | Fecha: ${cita.fechaCita}</p>
-        <p>Médico: ${medico}</p>
+  <html>
+  <head>
+    <title>Órdenes Médicas</title>
+    <style>
+      * { margin:0; padding:0; box-sizing:border-box; }
+      body { font-family: Arial, sans-serif; font-size: 12px; padding: 24px; max-width: 620px; }
+      .header-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; border-bottom:3px solid #e65c00; padding-bottom:10px; }
+      .logo-area { display:flex; align-items:center; gap:10px; }
+      .logo-circle { width:56px; height:56px; border-radius:50%; background:linear-gradient(135deg,#e65c00,#003366); display:flex; align-items:center; justify-content:center; }
+      .logo-text { font-size:22px; font-weight:900; color:#e65c00; letter-spacing:1px; }
+      .srl { font-size:10px; color:#e65c00; font-weight:700; }
+      .doc-title { font-size:16px; font-weight:900; color:#333; text-transform:uppercase; }
+      .doc-sub { font-size:11px; color:#555; margin-top:2px; }
+      .info-block { margin:10px 0; font-size:11px; line-height:1.8; }
+      .info-block span { font-weight:700; }
+      .orden-box { margin-bottom:14px; padding:10px 12px; border:1px solid #ddd; border-radius:4px; border-left:3px solid #003366; }
+      .orden-num { font-size:10px; font-weight:700; color:#003366; text-transform:uppercase; margin-bottom:4px; }
+      .orden-tipo { font-size:13px; font-weight:700; color:#111; margin-bottom:4px; }
+      .orden-desc { font-size:12px; color:#333; margin-bottom:4px; }
+      .orden-meta { font-size:11px; color:#555; }
+      .divider { border-top:2px solid #333; margin:16px 0; }
+      .firma-section { display:flex; justify-content:space-between; align-items:flex-end; margin-top:50px; }
+      .firma-box { text-align:center; }
+      .firma-line { border-top:1px solid #333; width:150px; margin:0 auto 4px; }
+      @media print { button { display:none!important; } }
+    </style>
+  </head>
+  <body>
+
+    <!-- CABECERA DINAMAX -->
+    <div class="header-top">
+      <div class="logo-area">
+        <div class="logo-circle">
+          <span style="color:white;font-weight:900;font-size:13px;">DX</span>
+        </div>
+        <div>
+          <div style="font-size:8px;color:#003366;font-weight:700;text-transform:uppercase;letter-spacing:1px;">CENTRO MÉDICO CON INTERNACION TRANSITORIA</div>
+          <div class="logo-text">DINAMAX <span class="srl">S.R.L.</span></div>
+        </div>
       </div>
-      ${ordenesHtml}
-      <div class="firma">
+      <div style="text-align:right;">
+        <div class="doc-title">Órdenes Médicas</div>
+        <div class="doc-sub">${ordenes.length} orden(es) emitida(s)</div>
+      </div>
+    </div>
+
+    <!-- DATOS GENERALES -->
+    <div class="info-block">
+      <div><span>Paciente:</span> ${cita.nombrePaciente}</div>
+      <div><span>Fecha:</span> ${cita.fechaCita} &nbsp;&nbsp; <span>Médico:</span> ${medico}</div>
+      <div><span>Especialidad:</span> ${cita.nombreEspecialidad || "—"}</div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- LISTA DE ÓRDENES -->
+    ${ordenes
+      .map(
+        (o, i) => `
+      <div class="orden-box">
+        <div class="orden-num">Orden ${i + 1}</div>
+        <div class="orden-tipo">${o.nombreTipo || "—"}</div>
+        <div class="orden-desc">${o.descripcion}</div>
+        ${o.indicaciones ? `<div class="orden-meta">📋 Indicaciones: ${o.indicaciones}</div>` : ""}
+        ${o.observaciones ? `<div class="orden-meta">📝 Obs: ${o.observaciones}</div>` : ""}
+      </div>`,
+      )
+      .join("")}
+
+    <div class="divider"></div>
+
+    <!-- FIRMA -->
+    <div class="firma-section">
+      <div class="firma-box">
         <div class="firma-line"></div>
-        <p style="font-weight:bold;">${medico}</p>
+        <p style="font-size:11px;font-weight:700;">${medico}</p>
         <p style="font-size:10px;color:#666;">Firma y Sello del Médico</p>
       </div>
-      <br/><button onclick="window.print()" style="width:100%;padding:10px;background:#2563eb;color:white;border:none;border-radius:4px;cursor:pointer;font-size:13px;font-weight:bold;">
-        🖨️ Imprimir Órdenes
-      </button></body></html>`);
+      <div class="firma-box">
+        <div class="firma-line"></div>
+        <p style="font-size:11px;">Firma del Paciente</p>
+      </div>
+    </div>
+
+    <br/>
+    <button onclick="window.print()" style="width:100%;padding:10px;background:#003366;color:white;border:none;border-radius:4px;cursor:pointer;font-size:13px;font-weight:bold;margin-top:8px;">
+      🖨️ Imprimir Órdenes Médicas
+    </button>
+  </body>
+  </html>`);
     w.document.close();
     w.focus();
     setTimeout(() => w.print(), 300);
@@ -1844,7 +1965,7 @@ function PantallaExito({ datos, onNueva }) {
         @media print { button { display: none; } }
       </style></head><body>
       <div class="header">
-        <h2 style="font-size:14px;text-transform:uppercase;">CONSULTORIO MÉDICO DINAMAX</h2>
+        <h2 style="font-size:14px;text-transform:uppercase;">CENTRO MÉDICO DINAMAX</h2>
         <p style="font-size:12px;font-weight:bold;margin-top:3px;">RECETA MÉDICA</p>
         <p style="font-size:11px;">Paciente: ${cita.nombrePaciente}</p>
         <p style="font-size:11px;">Fecha: ${cita.fechaCita} | Médico: ${medico}</p>
@@ -1975,7 +2096,7 @@ function PantallaExito({ datos, onNueva }) {
         <div class="info-block">
           <div><span>Fecha:</span> ${cita.fechaCita}</div>
           <div><span>Paciente:</span> ${cita.nombrePaciente}</div>
-          <div><span>Establecimiento:</span> CONSULTORIO MÉDICO DINAMAX</div>
+          <div><span>Establecimiento:</span> CENTRO MÉDICO DINAMAX</div>
           <div><span>Especialidad:</span> ${cita.nombreEspecialidad || "—"}</div>
           <div><span>Médico:</span> ${medico}</div>
         </div>

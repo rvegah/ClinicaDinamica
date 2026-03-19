@@ -349,7 +349,7 @@ export default function AgendarCitaPage() {
     </head>
     <body>
       <div class="header">
-        <h2>CONSULTORIO MÉDICO DINAMAX</h2>
+        <h2>CENTRO MÉDICO DINAMAX</h2>
         <div class="subtitulo">(${esCitaConfirmada ? "CONFIRMADA" : "RESERVA"})</div>
         <div class="especialidad">${citaGuardada.especialidad || "—"}</div>
         <div class="medico">${citaGuardada.nombreMedico || "—"}</div>
