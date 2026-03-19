@@ -134,7 +134,22 @@ const DashboardLayout = ({ children, currentUser }) => {
             </IconButton>
 
             {/* Logo DINAMAX */}
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+            <Box
+              onClick={() => navigate("/dashboard")}
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 1.5,
+                cursor: "pointer",
+                borderRadius: 2,
+                px: 1,
+                py: 0.5,
+                transition: "all 0.2s ease",
+                "&:hover": {
+                  bgcolor: "rgba(255,255,255,0.15)",
+                },
+              }}
+            >
               <LocalHospital sx={{ fontSize: "2rem" }} />
               <Box>
                 <Typography
@@ -145,15 +160,11 @@ const DashboardLayout = ({ children, currentUser }) => {
                     lineHeight: 1,
                   }}
                 >
-                  CONSULTORIO MÉDICO
+                  CENTRO MÉDICO
                 </Typography>
                 <Typography
                   variant="caption"
-                  sx={{
-                    fontWeight: 600,
-                    letterSpacing: "1px",
-                    opacity: 0.9,
-                  }}
+                  sx={{ fontWeight: 600, letterSpacing: "1px", opacity: 0.9 }}
                 >
                   DINAMAX
                 </Typography>
@@ -473,7 +484,7 @@ const DashboardLayout = ({ children, currentUser }) => {
               variant="caption"
               sx={{ color: "rgba(255,255,255,0.7)", display: "block" }}
             >
-              © 2026 CONSULTORIO MÉDICO
+              © 2026 CENTRO MÉDICO
             </Typography>
             <Typography
               variant="caption"

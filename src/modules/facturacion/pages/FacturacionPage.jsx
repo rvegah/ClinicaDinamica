@@ -1727,17 +1727,14 @@ export default function FacturacionPage() {
                                   type="number"
                                   min={0}
                                   step={0.01}
-                                  value={d.precioUnitario}
-                                  disabled
+                                  value={d.precioUnitario}                                 
                                   style={{
                                     width: 70,
                                     textAlign: "right",
                                     border: "1px solid #e5e7eb",
                                     borderRadius: 4,
                                     padding: "3px 6px",
-                                    fontSize: 13,
-                                    background: "#f3f4f6",
-                                    cursor: "not-allowed",
+                                    fontSize: 13,                                    
                                   }}
                                 />
                               </td>

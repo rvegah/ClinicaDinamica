@@ -29,6 +29,8 @@ import SignosVitalesPage from "./modules/consulta/pages/SignosVitalesPage";
 import ConsultaMedicaPage from "./modules/consulta/pages/ConsultaMedicaPage";
 import ServicioEnfermeriaPage from "./modules/enfermeria/pages/ServicioEnfermeriaPage";
 
+import ReporteIngresosPage from "./modules/reportes/pages/ReporteIngresosPage";
+
 // Redirección post-login
 function DashboardRedirect({ children }) {
   const navigate = useNavigate();
@@ -118,6 +120,8 @@ function ProtectedRoutes() {
             <Route path="/consulta/signos-vitales" element={<SignosVitalesPage />} />
             <Route path="/consulta/registrar" element={<ConsultaMedicaPage />} />            
             <Route path="/emergencias/atencion" element={<ServicioEnfermeriaPage />} />
+
+            <Route path="/reportes/ingresos" element={<ReporteIngresosPage />} />
 
             {/* Wildcard SIEMPRE AL FINAL */}
             <Route path="*" element={<Navigate to="/dashboard" replace />} />

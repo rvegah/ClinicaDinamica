@@ -277,7 +277,7 @@ const EditProfilePage = () => {
               </Typography>
             </Box>
             <Typography variant="body2" sx={{ opacity: 0.85 }}>
-              Consultorio Médico DINAMAX • Sistema de Gestión
+              Centro Médico DINAMAX • Sistema de Gestión
             </Typography>
           </Box>
         </Box>
