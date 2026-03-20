@@ -44,7 +44,7 @@ const agendamientoService = {
   agendarCita: async (payload) => {
     const userJson = sessionStorage.getItem("user");
     const user = userJson ? JSON.parse(userJson) : {};
-    const usuarioId = user.id || user.userId || 1;
+    const usuarioId = user.usuario_ID || user.id || user.userId || 1;
 
     const body = {
       codigoPaciente: payload.paciente_ID,

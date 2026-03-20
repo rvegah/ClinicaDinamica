@@ -111,8 +111,8 @@ function BuscadorCitas({ onSeleccionar }) {
       });
       const lista = res.exitoso ? res.datos || [] : [];
       // Solo mostrar "Listo para Consulta"
-      const filtradas = lista.filter(
-        (c) => c.estadoCita === "Listo para Consulta",
+      const filtradas = lista.filter((c) =>
+        ["Listo para Consulta", "En Atención"].includes(c.estadoCita),
       );
       setCitas(filtradas);
       setBuscado(true);
@@ -141,7 +141,7 @@ function BuscadorCitas({ onSeleccionar }) {
         fechaConsulta: cita.fechaCita,
         horaInicio: cita.horaInicio,
         motivoConsulta: cita.motivoConsulta || "",
-        usuarioRegistro: usuario.empleadoId,
+        usuarioRegistro: usuario.id,
       };
       const res = await atencionMedicaService.iniciarConsulta(payload);
       if (res.exitoso) {

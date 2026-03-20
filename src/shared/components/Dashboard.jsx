@@ -37,7 +37,7 @@ import {
   AttachMoney,
   BarChart,
 } from "@mui/icons-material";
-import clinicaLogo from "../../assets/CLINICA.jpeg";
+import clinicaLogo from "../../assets/CLINICA.png";
 
 // ── Ícono según descripción ───────────────────────────────────────────────────
 const getIconForService = (descripcion) => {
@@ -402,6 +402,9 @@ function Dashboard() {
     }
   })();
   const esSuperAdmin = user?.rol === "SuperAdmin";
+  const esAdmisionista = user?.rol === "Admicionista";
+  const verTotales = esSuperAdmin || esAdmisionista;
+  const [totales, setTotales] = useState(null);
 
   useEffect(() => {
     fetch(
@@ -422,6 +425,29 @@ function Dashboard() {
       })
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    if (!verTotales) return;
+    fetch(
+      "https://dinamax-clinicas.farmadinamica.com.bo/api/farmalink-clinica/Reportes/ReporteIngresos",
+      { headers: { accept: "*/*" } },
+    )
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.exitoso) setTotales(d.datos);
+      })
+      .catch(() => {});
+  }, [verTotales]);
+
+  const totalEnfermeria = (totales?.ingresosEnfermeria || []).reduce(
+    (s, r) => s + (Number(r.costoTotal) || 0),
+    0,
+  );
+  const totalMedico = (totales?.ingresosMedicos || []).reduce(
+    (s, r) => s + (Number(r.cotoTotal) || 0),
+    0,
+  );
+  const totalGeneral = totalEnfermeria + totalMedico;
 
   const categorias = servicios.reduce((acc, s) => {
     const cat = s.categoria || "General";
@@ -497,7 +523,7 @@ function Dashboard() {
             sx={{
               flexShrink: 0,
               bgcolor: "white",
-              borderRadius: 3,
+              borderRadius: 1,
               p: 2,
               boxShadow: "0 8px 32px rgba(0,0,0,0.3)",
               display: "flex",
@@ -565,7 +591,7 @@ function Dashboard() {
                 lineHeight: 1.5,
               }}
             >
-              Centro Médico con Internación Transitoria
+              Centro Médico
             </Typography>
             <Box sx={{ display: "flex", gap: 3.5, mt: 1.5 }}>
               {[
@@ -603,6 +629,72 @@ function Dashboard() {
         </Box>
       </Paper>
 
+      {/* ── TOTALES (solo Admisionista y SuperAdmin) ─────────────────── */}
+      {verTotales && totales && (
+        <Grid container spacing={2} sx={{ mb: 2.5 }}>
+          {[
+            {
+              titulo: "Total Enfermería",
+              valor: totalEnfermeria,
+              color: "#1E8449",
+              sub: `${totales.ingresosEnfermeria?.length || 0} servicios`,
+            },
+            {
+              titulo: "Total Consultas Médicas",
+              valor: totalMedico,
+              color: "#1A5276",
+              sub: `${totales.ingresosMedicos?.length || 0} consultas`,
+            },
+            {
+              titulo: "Total General",
+              valor: totalGeneral,
+              color: "#E67E22",
+              sub: "Enfermería + Consultas",
+            },
+          ].map((s) => (
+            <Grid item xs={12} sm={4} key={s.titulo}>
+              <Paper
+                elevation={0}
+                sx={{
+                  borderRadius: 1.5,
+                  border: `1.5px solid ${s.color}30`,
+                  background: `linear-gradient(135deg, ${s.color}12 0%, white 100%)`,
+                  p: 2,
+                }}
+              >
+                <Typography
+                  sx={{
+                    fontSize: "0.72rem",
+                    color: "#6b7280",
+                    fontWeight: 700,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.5px",
+                  }}
+                >
+                  {s.titulo}
+                </Typography>
+                <Typography
+                  sx={{
+                    fontSize: "1.6rem",
+                    fontWeight: 900,
+                    color: s.color,
+                    lineHeight: 1.2,
+                    mt: 0.5,
+                  }}
+                >
+                  Bs. {Number(s.valor || 0).toFixed(2)}
+                </Typography>
+                <Typography
+                  sx={{ fontSize: "0.68rem", color: "#9ca3af", mt: 0.3 }}
+                >
+                  {s.sub}
+                </Typography>
+              </Paper>
+            </Grid>
+          ))}
+        </Grid>
+      )}
+
       {/* ── TÍTULO ───────────────────────────────────────────────────────── */}
       <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2.5 }}>
         <Typography
@@ -626,7 +718,7 @@ function Dashboard() {
         >
           Selecciona una categoría para ver el detalle
         </Typography>
-      </Box>
+      </Box>      
 
       {/* ── LOADING ──────────────────────────────────────────────────────── */}
       {loading && (

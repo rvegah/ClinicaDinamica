@@ -1,6 +1,6 @@
 // src/shared/components/LoginPage.jsx - VERSIÓN MEJORADA CENTRO MÉDICO DINAMAX
 
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Box,
   Card,
@@ -12,30 +12,30 @@ import {
   InputAdornment,
   IconButton,
   CircularProgress,
-} from '@mui/material';
+} from "@mui/material";
 import {
   Person,
   Lock,
   Visibility,
   VisibilityOff,
   LocalHospital,
-} from '@mui/icons-material';
-import NetworkValidationService from '../../services/networkValidation';
-import ErrorDialog from '../../components/ErrorDialog';
-import { clinicColors } from '../../app/theme';
-import { useAuth } from '../../context/AuthContext';
+} from "@mui/icons-material";
+import NetworkValidationService from "../../services/networkValidation";
+import ErrorDialog from "../../components/ErrorDialog";
+import { clinicColors } from "../../app/theme";
+import { useAuth } from "../../context/AuthContext";
 
 function LoginPage() {
-  const [usuario, setUsuario] = useState('');
-  const [contrasena, setContrasena] = useState('');
+  const [usuario, setUsuario] = useState("");
+  const [contrasena, setContrasena] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogConfig, setDialogConfig] = useState({
-    title: '',
-    message: '',
-    errorType: 'default',
+    title: "",
+    message: "",
+    errorType: "default",
     autoClose: false,
   });
 
@@ -43,61 +43,85 @@ function LoginPage() {
 
   const handleError = (error) => {
     let config = {
-      title: 'Error',
-      message: '',
-      errorType: 'default',
+      title: "Error",
+      message: "",
+      errorType: "default",
       autoClose: false,
     };
 
-    const errorMsg = error.message?.toLowerCase() || '';
-    
-    if (errorMsg.includes('contraseña') || errorMsg.includes('password') || error.code === 401) {
+    const errorMsg = error.message?.toLowerCase() || "";
+
+    if (
+      errorMsg.includes("contraseña") ||
+      errorMsg.includes("password") ||
+      error.code === 401
+    ) {
       config = {
-        title: 'Contraseña Incorrecta',
-        message: 'La contraseña que ingresaste no es correcta. Por favor, verifica e intenta nuevamente.',
-        errorType: 'password',
+        title: "Contraseña Incorrecta",
+        message:
+          "La contraseña que ingresaste no es correcta. Por favor, verifica e intenta nuevamente.",
+        errorType: "password",
         autoClose: false,
       };
-    } else if (errorMsg.includes('usuario') || errorMsg.includes('no encontrado') || errorMsg.includes('not found')) {
+    } else if (
+      errorMsg.includes("usuario") ||
+      errorMsg.includes("no encontrado") ||
+      errorMsg.includes("not found")
+    ) {
       config = {
-        title: 'Usuario No Encontrado',
-        message: 'El usuario que ingresaste no existe en el sistema. Verifica que esté escrito correctamente.',
-        errorType: 'user',
+        title: "Usuario No Encontrado",
+        message:
+          "El usuario que ingresaste no existe en el sistema. Verifica que esté escrito correctamente.",
+        errorType: "user",
         autoClose: false,
       };
-    } else if (errorMsg.includes('bloqueado') || errorMsg.includes('suspendido') || error.code === 403) {
+    } else if (
+      errorMsg.includes("bloqueado") ||
+      errorMsg.includes("suspendido") ||
+      error.code === 403
+    ) {
       config = {
-        title: 'Usuario Bloqueado',
-        message: 'Tu usuario ha sido bloqueado. Por favor, contacta al administrador del sistema.',
-        errorType: 'user',
+        title: "Usuario Bloqueado",
+        message:
+          "Tu usuario ha sido bloqueado. Por favor, contacta al administrador del sistema.",
+        errorType: "user",
         autoClose: false,
       };
-    } else if (errorMsg.includes('conexión') || errorMsg.includes('conectar') || error.code === 0) {
+    } else if (
+      errorMsg.includes("conexión") ||
+      errorMsg.includes("conectar") ||
+      error.code === 0
+    ) {
       config = {
-        title: 'Sin Conexión',
-        message: 'No se pudo conectar con el servidor. Verifica tu conexión a internet e intenta nuevamente.',
-        errorType: 'connection',
+        title: "Sin Conexión",
+        message:
+          "No se pudo conectar con el servidor. Verifica tu conexión a internet e intenta nuevamente.",
+        errorType: "connection",
         autoClose: false,
       };
-    } else if (errorMsg.includes('servidor') || error.code === 500) {
+    } else if (errorMsg.includes("servidor") || error.code === 500) {
       config = {
-        title: 'Error del Servidor',
-        message: 'El servidor está experimentando problemas. Por favor, intenta nuevamente en unos momentos.',
-        errorType: 'server',
+        title: "Error del Servidor",
+        message:
+          "El servidor está experimentando problemas. Por favor, intenta nuevamente en unos momentos.",
+        errorType: "server",
         autoClose: false,
       };
     } else if (error.code === 404) {
       config = {
-        title: 'Servicio No Disponible',
-        message: 'El servicio de autenticación no está disponible. Contacta al administrador.',
-        errorType: 'server',
+        title: "Servicio No Disponible",
+        message:
+          "El servicio de autenticación no está disponible. Contacta al administrador.",
+        errorType: "server",
         autoClose: false,
       };
     } else {
       config = {
-        title: 'Error al Iniciar Sesión',
-        message: error.message || 'Ocurrió un error inesperado. Por favor, intenta nuevamente.',
-        errorType: 'default',
+        title: "Error al Iniciar Sesión",
+        message:
+          error.message ||
+          "Ocurrió un error inesperado. Por favor, intenta nuevamente.",
+        errorType: "default",
         autoClose: false,
       };
     }
@@ -111,18 +135,18 @@ function LoginPage() {
     setLoading(true);
 
     try {
-      console.log('🔍 Detectando IP local...');
+      console.log("🔍 Detectando IP local...");
       let localIP;
-      
+
       try {
         localIP = await NetworkValidationService.getLocalIP();
-        console.log('✅ IP local detectada:', localIP);
+        console.log("✅ IP local detectada:", localIP);
       } catch (ipError) {
-        console.warn('⚠️ No se pudo detectar IP, usando fallback');
-        localIP = '192.168.0.1';
+        console.warn("⚠️ No se pudo detectar IP, usando fallback");
+        localIP = "192.168.0.1";
       }
 
-      console.log('🔐 Intentando login con API...');
+      console.log("🔐 Intentando login con API...");
       const loginResult = await login({
         nombreUsuario: usuario,
         password: contrasena,
@@ -131,9 +155,9 @@ function LoginPage() {
 
       if (loginResult.success) {
         setDialogConfig({
-          title: '¡Bienvenido!',
+          title: "¡Bienvenido!",
           message: `Inicio de sesión exitoso.\nIP detectada: ${localIP}`,
-          errorType: 'success',
+          errorType: "success",
           autoClose: true,
         });
         setDialogOpen(true);
@@ -141,7 +165,7 @@ function LoginPage() {
         throw new Error(loginResult.message);
       }
     } catch (error) {
-      console.error('❌ Error en login:', error);
+      console.error("❌ Error en login:", error);
       handleError(error);
     } finally {
       setLoading(false);
@@ -156,113 +180,72 @@ function LoginPage() {
     <>
       <Box
         sx={{
-          minHeight: '100vh',
+          minHeight: "100vh",
           background: `linear-gradient(135deg, ${clinicColors.primaryDark} 0%, ${clinicColors.primary} 50%, ${clinicColors.secondaryDark} 100%)`,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
           padding: 2,
-          position: 'relative',
-          overflow: 'hidden',
-          '&::before': {
+          position: "relative",
+          overflow: "hidden",
+          "&::before": {
             content: '""',
-            position: 'absolute',
-            top: '-50%',
-            right: '-50%',
-            width: '100%',
-            height: '100%',
-            background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%)',
-            animation: 'pulse 15s ease-in-out infinite',
+            position: "absolute",
+            top: "-50%",
+            right: "-50%",
+            width: "100%",
+            height: "100%",
+            background:
+              "radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%)",
+            animation: "pulse 15s ease-in-out infinite",
           },
-          '@keyframes pulse': {
-            '0%, 100%': { transform: 'scale(1)', opacity: 0.5 },
-            '50%': { transform: 'scale(1.1)', opacity: 0.8 },
+          "@keyframes pulse": {
+            "0%, 100%": { transform: "scale(1)", opacity: 0.5 },
+            "50%": { transform: "scale(1.1)", opacity: 0.8 },
           },
         }}
       >
-        <Container maxWidth="sm" sx={{ position: 'relative', zIndex: 1 }}>
+        <Container maxWidth="sm" sx={{ position: "relative", zIndex: 1 }}>
           {/* Logo y título */}
-          <Box sx={{ textAlign: 'center', mb: 5 }}>
+          <Box sx={{ textAlign: "center", mb: 5 }}>
             <Box
               sx={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
                 mb: 3,
-                position: 'relative',
+                position: "relative",
               }}
             >
               {/* Logo médico mejorado */}
               <Box
                 sx={{
-                  position: 'relative',
-                  width: 80,
-                  height: 80,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  background: 'rgba(255,255,255,0.15)',
-                  borderRadius: '50%',
-                  backdropFilter: 'blur(10px)',
-                  boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
-                  border: '2px solid rgba(255,255,255,0.3)',
-                  mr: 2,
+                  bgcolor: "white",
+                  borderRadius: 1,
+                  p: 2,
+                  boxShadow: "0 8px 32px rgba(0,0,0,0.25)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
                 }}
               >
-                <LocalHospital
-                  sx={{
-                    fontSize: '3rem',
-                    color: 'white',
-                    filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))',
-                  }}
+                <Box
+                  component="img"
+                  src="/clinica-farma/CLINICA.png"
+                  alt="Centro Médico DINAMAX"
+                  sx={{ height: 70, objectFit: "contain" }}
                 />
-              </Box>
-
-              <Box sx={{ textAlign: 'left' }}>
-                <Typography
-                  variant="h3"
-                  sx={{
-                    fontWeight: 800,
-                    color: 'white',
-                    textShadow: '0 2px 10px rgba(0,0,0,0.3)',
-                    letterSpacing: '1px',
-                    lineHeight: 1.2,
-                  }}
-                >
-                  CONSULTORIO
-                </Typography>
-                <Typography
-                  variant="h3"
-                  sx={{
-                    fontWeight: 800,
-                    color: 'white',
-                    textShadow: '0 2px 10px rgba(0,0,0,0.3)',
-                    letterSpacing: '1px',
-                    lineHeight: 1.2,
-                  }}
-                >
-                  MÉDICO{' '}
-                  <Box
-                    component="span"
-                    sx={{
-                      color: clinicColors.warning,
-                      textShadow: '0 0 20px rgba(255,167,38,0.5)',
-                    }}
-                  >
-                    DINAMAX
-                  </Box>
-                </Typography>
               </Box>
             </Box>
 
             <Typography
               variant="h6"
               sx={{
-                color: 'white',
+                color: "white",
                 fontWeight: 300,
-                letterSpacing: '2px',
-                textTransform: 'uppercase',
-                textShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                letterSpacing: "2px",
+                textTransform: "uppercase",
+                textShadow: "0 2px 8px rgba(0,0,0,0.3)",
               }}
             >
               Sistema de Gestión Médica
@@ -273,24 +256,24 @@ function LoginPage() {
           <Card
             sx={{
               borderRadius: 4,
-              background: 'rgba(255, 255, 255, 0.95)',
-              backdropFilter: 'blur(20px)',
-              boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
-              border: '1px solid rgba(255,255,255,0.5)',
-              overflow: 'hidden',
+              background: "rgba(255, 255, 255, 0.95)",
+              backdropFilter: "blur(20px)",
+              boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
+              border: "1px solid rgba(255,255,255,0.5)",
+              overflow: "hidden",
             }}
           >
             <CardContent sx={{ p: 5 }}>
               <Typography
                 variant="h4"
                 sx={{
-                  textAlign: 'center',
+                  textAlign: "center",
                   mb: 1,
                   fontWeight: 700,
                   background: `linear-gradient(135deg, ${clinicColors.primary} 0%, ${clinicColors.secondary} 100%)`,
-                  backgroundClip: 'text',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: "text",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
                 }}
               >
                 Iniciar Sesión
@@ -298,7 +281,7 @@ function LoginPage() {
               <Typography
                 variant="body1"
                 sx={{
-                  textAlign: 'center',
+                  textAlign: "center",
                   mb: 4,
                   color: clinicColors.light.text.secondary,
                 }}
@@ -316,23 +299,23 @@ function LoginPage() {
                   disabled={loading}
                   sx={{
                     mb: 3,
-                    '& .MuiOutlinedInput-root': {
+                    "& .MuiOutlinedInput-root": {
                       borderRadius: 3,
-                      bgcolor: loading ? '#f5f5f5' : 'white',
-                      transition: 'all 0.3s ease',
-                      '&.Mui-focused': {
-                        transform: 'translateY(-2px)',
+                      bgcolor: loading ? "#f5f5f5" : "white",
+                      transition: "all 0.3s ease",
+                      "&.Mui-focused": {
+                        transform: "translateY(-2px)",
                         boxShadow: `0 4px 20px ${clinicColors.alpha.primary20}`,
-                        '& fieldset': {
+                        "& fieldset": {
                           borderColor: clinicColors.primary,
-                          borderWidth: '2px',
+                          borderWidth: "2px",
                         },
                       },
-                      '&:hover:not(.Mui-focused) fieldset': {
+                      "&:hover:not(.Mui-focused) fieldset": {
                         borderColor: clinicColors.primaryLight,
                       },
                     },
-                    '& .MuiInputLabel-root.Mui-focused': {
+                    "& .MuiInputLabel-root.Mui-focused": {
                       color: clinicColors.primary,
                       fontWeight: 600,
                     },
@@ -344,7 +327,7 @@ function LoginPage() {
                         <Person
                           sx={{
                             color: clinicColors.primary,
-                            fontSize: '1.5rem',
+                            fontSize: "1.5rem",
                           }}
                         />
                       </InputAdornment>
@@ -355,30 +338,30 @@ function LoginPage() {
                 <TextField
                   fullWidth
                   label="Contraseña"
-                  type={showPassword ? 'text' : 'password'}
+                  type={showPassword ? "text" : "password"}
                   variant="outlined"
                   value={contrasena}
                   onChange={(e) => setContrasena(e.target.value)}
                   disabled={loading}
                   sx={{
                     mb: 4,
-                    '& .MuiOutlinedInput-root': {
+                    "& .MuiOutlinedInput-root": {
                       borderRadius: 3,
-                      bgcolor: loading ? '#f5f5f5' : 'white',
-                      transition: 'all 0.3s ease',
-                      '&.Mui-focused': {
-                        transform: 'translateY(-2px)',
+                      bgcolor: loading ? "#f5f5f5" : "white",
+                      transition: "all 0.3s ease",
+                      "&.Mui-focused": {
+                        transform: "translateY(-2px)",
                         boxShadow: `0 4px 20px ${clinicColors.alpha.primary20}`,
-                        '& fieldset': {
+                        "& fieldset": {
                           borderColor: clinicColors.primary,
-                          borderWidth: '2px',
+                          borderWidth: "2px",
                         },
                       },
-                      '&:hover:not(.Mui-focused) fieldset': {
+                      "&:hover:not(.Mui-focused) fieldset": {
                         borderColor: clinicColors.primaryLight,
                       },
                     },
-                    '& .MuiInputLabel-root.Mui-focused': {
+                    "& .MuiInputLabel-root.Mui-focused": {
                       color: clinicColors.primary,
                       fontWeight: 600,
                     },
@@ -390,7 +373,7 @@ function LoginPage() {
                         <Lock
                           sx={{
                             color: clinicColors.primary,
-                            fontSize: '1.5rem',
+                            fontSize: "1.5rem",
                           }}
                         />
                       </InputAdornment>
@@ -403,7 +386,7 @@ function LoginPage() {
                           disabled={loading}
                           sx={{
                             color: clinicColors.primary,
-                            '&:hover': {
+                            "&:hover": {
                               bgcolor: clinicColors.alpha.primary10,
                             },
                           }}
@@ -424,49 +407,49 @@ function LoginPage() {
                   sx={{
                     py: 2.5,
                     background: loading
-                      ? '#cccccc'
+                      ? "#cccccc"
                       : `linear-gradient(135deg, ${clinicColors.primary} 0%, ${clinicColors.primaryLight} 100%)`,
-                    fontSize: '1.1rem',
+                    fontSize: "1.1rem",
                     fontWeight: 700,
                     borderRadius: 3,
-                    textTransform: 'none',
-                    letterSpacing: '0.5px',
+                    textTransform: "none",
+                    letterSpacing: "0.5px",
                     boxShadow: loading
-                      ? 'none'
+                      ? "none"
                       : `0 8px 24px ${clinicColors.alpha.primary30}`,
-                    transition: 'all 0.3s ease',
-                    '&:hover': {
+                    transition: "all 0.3s ease",
+                    "&:hover": {
                       background: loading
-                        ? '#cccccc'
+                        ? "#cccccc"
                         : `linear-gradient(135deg, ${clinicColors.primaryDark} 0%, ${clinicColors.primary} 100%)`,
                       boxShadow: loading
-                        ? 'none'
+                        ? "none"
                         : `0 12px 32px ${clinicColors.alpha.primary30}`,
-                      transform: loading ? 'none' : 'translateY(-2px)',
+                      transform: loading ? "none" : "translateY(-2px)",
                     },
-                    '&:disabled': {
+                    "&:disabled": {
                       background: clinicColors.alpha.primary20,
-                      color: 'rgba(255,255,255,0.8)',
+                      color: "rgba(255,255,255,0.8)",
                     },
                   }}
                 >
                   {loading ? (
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                      <CircularProgress size={24} sx={{ color: 'white' }} />
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                      <CircularProgress size={24} sx={{ color: "white" }} />
                       <span>Validando acceso...</span>
                     </Box>
                   ) : (
-                    'Ingresar al Sistema'
+                    "Ingresar al Sistema"
                   )}
                 </Button>
               </Box>
 
-              <Box sx={{ mt: 4, textAlign: 'center' }}>
+              <Box sx={{ mt: 4, textAlign: "center" }}>
                 <Typography
                   variant="caption"
                   sx={{
                     color: clinicColors.light.text.secondary,
-                    fontSize: '0.85rem',
+                    fontSize: "0.85rem",
                     fontWeight: 500,
                   }}
                 >
@@ -475,9 +458,9 @@ function LoginPage() {
                 <Typography
                   variant="caption"
                   sx={{
-                    display: 'block',
+                    display: "block",
                     color: clinicColors.light.text.secondary,
-                    fontSize: '0.75rem',
+                    fontSize: "0.75rem",
                     mt: 0.5,
                   }}
                 >
