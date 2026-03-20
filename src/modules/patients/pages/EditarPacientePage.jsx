@@ -123,6 +123,7 @@ export default function EditarPacientePage() {
     const userJson = sessionStorage.getItem("user");
     const user = userJson ? JSON.parse(userJson) : {};
     const codigoEmpleado = user.codigoEmpleado || user.usuario || "SYSTEMAS";
+    const usuarioId = user.usuario_ID || 1;
 
     setGuardando(true);
     try {
@@ -146,6 +147,7 @@ export default function EditarPacientePage() {
         ciudad: form.ciudad.toUpperCase() || "",
         direccionCompleta: form.direccionCompleta.toUpperCase() || "",
         codigoEmpleadoAlta: codigoEmpleado,
+        usuarioRegistroAlta: usuarioId,
       };
 
       const res = await pacienteService.actualizarPaciente(payload);

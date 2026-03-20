@@ -141,7 +141,7 @@ const DashboardLayout = ({ children, currentUser }) => {
                 alignItems: "center",
                 gap: 1.5,
                 cursor: "pointer",
-                borderRadius: 2,
+                borderRadius: 1,
                 px: 1,
                 py: 0.5,
                 transition: "all 0.2s ease",
@@ -150,24 +150,24 @@ const DashboardLayout = ({ children, currentUser }) => {
                 },
               }}
             >
-              <LocalHospital sx={{ fontSize: "2rem" }} />
-              <Box>
-                <Typography
-                  variant="h6"
-                  sx={{
-                    fontWeight: 800,
-                    letterSpacing: "0.5px",
-                    lineHeight: 1,
-                  }}
-                >
-                  CENTRO MÉDICO
-                </Typography>
-                <Typography
-                  variant="caption"
-                  sx={{ fontWeight: 600, letterSpacing: "1px", opacity: 0.9 }}
-                >
-                  DINAMAX
-                </Typography>
+              <Box
+                sx={{
+                  bgcolor: "white",
+                  borderRadius: 0.5,
+                  px: 1.5,
+                  py: 0.8,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+                }}
+              >
+                <Box
+                  component="img"
+                  src="/clinica-farma/CLINICA.png"
+                  alt="DINAMAX"
+                  sx={{ height: 32, objectFit: "contain" }}
+                />
               </Box>
             </Box>
           </Box>

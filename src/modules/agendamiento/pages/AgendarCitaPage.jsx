@@ -51,7 +51,7 @@ const getCodigoEmpleado = () => {
 const getUserId = () => {
   try {
     const user = JSON.parse(sessionStorage.getItem("user") || "{}");
-    return user.id || user.userId || 1;
+    return user.usuario_ID || user.id || 1;
   } catch {
     return 1;
   }
@@ -123,6 +123,8 @@ export default function AgendarCitaPage() {
   const [motivoConsulta, setMotivoConsulta] = useState("");
   const [observaciones, setObservaciones] = useState("");
 
+  const [tipoBusquedaPaciente, setTipoBusquedaPaciente] = useState("documento");
+
   // ─── CARGA CATÁLOGOS ────────────────────────────────────────────────────────
   useEffect(() => {
     const cargar = async () => {
@@ -179,23 +181,29 @@ export default function AgendarCitaPage() {
   }, [medicoId, especialidadId]);
 
   // ─── BUSCAR PACIENTE ─────────────────────────────────────────────────────────
-  const buscarPaciente = useCallback(async (keyword) => {
-    if (!keyword || keyword.length < 2) {
-      setPacientesBuscados([]);
-      return;
-    }
-    setBuscandoPaciente(true);
-    try {
-      // Detectar si es número (documento) o texto (nombre)
-      const params = { nombreCompletoPaciente: keyword };
-      const res = await pacienteService.buscarPacientes(params);
-      setPacientesBuscados(res.exitoso ? res.datos || [] : []);
-    } catch {
-      setPacientesBuscados([]);
-    } finally {
-      setBuscandoPaciente(false);
-    }
-  }, []);
+  const buscarPaciente = useCallback(
+    async (keyword) => {
+      if (!keyword || keyword.length < 2) {
+        setPacientesBuscados([]);
+        return;
+      }
+      setBuscandoPaciente(true);
+      try {
+        // Detectar si es número (documento) o texto (nombre)
+        const params =
+          tipoBusquedaPaciente === "documento"
+            ? { numeroDocumento: keyword }
+            : { nombreCompletoPaciente: keyword };
+        const res = await pacienteService.buscarPacientes(params);
+        setPacientesBuscados(res.exitoso ? res.datos || [] : []);
+      } catch {
+        setPacientesBuscados([]);
+      } finally {
+        setBuscandoPaciente(false);
+      }
+    },
+    [tipoBusquedaPaciente],
+  );
 
   useEffect(() => {
     const t = setTimeout(() => buscarPaciente(busquedaPaciente), 400);
@@ -225,6 +233,7 @@ export default function AgendarCitaPage() {
     setEsCitaConfirmada(false);
     setMotivoConsulta("");
     setObservaciones("");
+    setTipoBusquedaPaciente("documento");
   };
 
   // ─── GUARDAR CITA ─────────────────────────────────────────────────────────────
@@ -252,6 +261,7 @@ export default function AgendarCitaPage() {
 
     setGuardando(true);
     try {
+      console.log('👤 USER sessionStorage:', JSON.parse(sessionStorage.getItem("user") || "{}"));
       const payload = {
         paciente_ID: pacienteSeleccionado.paciente_ID,
         medico_ID: Number(medicoId),
@@ -264,6 +274,7 @@ export default function AgendarCitaPage() {
         horaInicio,
         esCitaConfirmada,
         codigoEmpleadoAlta: getCodigoEmpleado(),
+        usuarioRegistroAlta: getUserId(),
         motivoConsulta,
         observaciones,
       };
@@ -620,86 +631,141 @@ export default function AgendarCitaPage() {
               </Button>
             </Box>
           ) : (
-            <Box ref={busquedaRef} sx={{ position: "relative" }}>
-              <TextField
-                fullWidth
-                size="small"
-                placeholder="Buscar por documento o nombre del paciente..."
-                value={busquedaPaciente}
-                onChange={(e) => setBusquedaPaciente(e.target.value)}
-                onBlur={() => setTimeout(() => setPacientesBuscados([]), 200)}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      {buscandoPaciente ? (
-                        <CircularProgress size={15} />
-                      ) : (
-                        <Search sx={{ fontSize: 17, color: "#9ca3af" }} />
-                      )}
-                    </InputAdornment>
-                  ),
-                }}
-              />
-              {pacientesBuscados.length > 0 && (
-                <Portal>
-                  <Paper
+            <Box ref={busquedaRef}>
+              {/* Botones tipo búsqueda */}
+              <Box sx={{ display: "flex", gap: 1, mb: 1.5 }}>
+                {[
+                  { id: "documento", label: "Por Nro. Documento" },
+                  { id: "nombre", label: "Por Nombre" },
+                ].map((opt) => (
+                  <Button
+                    key={opt.id}
+                    size="small"
+                    variant={
+                      tipoBusquedaPaciente === opt.id ? "contained" : "outlined"
+                    }
+                    onClick={() => {
+                      setTipoBusquedaPaciente(opt.id);
+                      setBusquedaPaciente("");
+                      setPacientesBuscados([]);
+                    }}
                     sx={{
-                      position: "fixed",
-                      zIndex: 9999,
-                      width: busquedaRef.current
-                        ? busquedaRef.current.getBoundingClientRect().width
-                        : 600,
-                      top: busquedaRef.current
-                        ? busquedaRef.current.getBoundingClientRect().bottom + 4
-                        : 200,
-                      left: busquedaRef.current
-                        ? busquedaRef.current.getBoundingClientRect().left
-                        : 200,
-                      maxHeight: 260,
-                      overflow: "auto",
                       borderRadius: 1.5,
-                      boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
-                      border: "1px solid #e5e7eb",
-                      bgcolor: "white",
+                      textTransform: "none",
+                      fontWeight: 600,
+                      fontSize: 12,
+                      ...(tipoBusquedaPaciente === opt.id
+                        ? {
+                            bgcolor: "#2563eb",
+                            "&:hover": { bgcolor: "#1d4ed8" },
+                            boxShadow: "none",
+                          }
+                        : {
+                            borderColor: "#d1d5db",
+                            color: "#374151",
+                            "&:hover": { borderColor: "#9ca3af" },
+                          }),
                     }}
                   >
-                    {pacientesBuscados.map((p) => (
-                      <Box
-                        key={p.paciente_ID}
-                        onMouseDown={() => {
-                          setPacienteSeleccionado(p);
-                          setBusquedaPaciente("");
-                          setPacientesBuscados([]);
-                        }}
-                        sx={{
-                          px: 2,
-                          py: 1.25,
-                          cursor: "pointer",
-                          "&:hover": { bgcolor: "#f9fafb" },
-                          borderBottom: "1px solid #f3f4f6",
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                        }}
-                      >
-                        <Box>
-                          <Typography variant="body2" fontWeight={600}>
-                            {(p.nombreCompletoPaciente || "").trim()}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            Doc: {p.numeroDocumento}
-                          </Typography>
-                        </Box>
-                        {p.numeroHistoriaClinica && (
-                          <Typography variant="caption" color="text.secondary">
-                            HC: {p.numeroHistoriaClinica}
-                          </Typography>
+                    {opt.label}
+                  </Button>
+                ))}
+              </Box>
+
+              {/* Campo de búsqueda */}
+              <Box sx={{ position: "relative" }}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  placeholder={
+                    tipoBusquedaPaciente === "documento"
+                      ? "Ej: 12345678"
+                      : "Ej: JOSE NOGALES"
+                  }
+                  value={busquedaPaciente}
+                  onChange={(e) => setBusquedaPaciente(e.target.value)}
+                  onBlur={() => setTimeout(() => setPacientesBuscados([]), 200)}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        {buscandoPaciente ? (
+                          <CircularProgress size={15} />
+                        ) : (
+                          <Search sx={{ fontSize: 17, color: "#9ca3af" }} />
                         )}
-                      </Box>
-                    ))}
-                  </Paper>
-                </Portal>
-              )}
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+                {/* Portal del dropdown — sin cambios */}
+                {pacientesBuscados.length > 0 && (
+                  <Portal>
+                    <Paper
+                      sx={{
+                        position: "fixed",
+                        zIndex: 9999,
+                        width: busquedaRef.current
+                          ? busquedaRef.current.getBoundingClientRect().width
+                          : 600,
+                        top: busquedaRef.current
+                          ? busquedaRef.current.getBoundingClientRect().bottom +
+                            4
+                          : 200,
+                        left: busquedaRef.current
+                          ? busquedaRef.current.getBoundingClientRect().left
+                          : 200,
+                        maxHeight: 260,
+                        overflow: "auto",
+                        borderRadius: 1.5,
+                        boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
+                        border: "1px solid #e5e7eb",
+                        bgcolor: "white",
+                      }}
+                    >
+                      {pacientesBuscados.map((p) => (
+                        <Box
+                          key={p.paciente_ID}
+                          onMouseDown={() => {
+                            setPacienteSeleccionado(p);
+                            setBusquedaPaciente("");
+                            setPacientesBuscados([]);
+                          }}
+                          sx={{
+                            px: 2,
+                            py: 1.25,
+                            cursor: "pointer",
+                            "&:hover": { bgcolor: "#f9fafb" },
+                            borderBottom: "1px solid #f3f4f6",
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                          }}
+                        >
+                          <Box>
+                            <Typography variant="body2" fontWeight={600}>
+                              {(p.nombreCompletoPaciente || "").trim()}
+                            </Typography>
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                            >
+                              Doc: {p.numeroDocumento}
+                            </Typography>
+                          </Box>
+                          {p.numeroHistoriaClinica && (
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                            >
+                              HC: {p.numeroHistoriaClinica}
+                            </Typography>
+                          )}
+                        </Box>
+                      ))}
+                    </Paper>
+                  </Portal>
+                )}
+              </Box>
             </Box>
           )}
         </CardContent>

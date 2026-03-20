@@ -36,11 +36,11 @@ import pacienteService, {
 // SN     → adulto sin datos — solo número de documento
 // NN     → bebé sin datos   — solo número de documento
 const TIPOS_REGISTRO = [
-  {
+  /*{
     id: "normal",
     label: "Paciente Normal",
     desc: "Registro completo con datos del paciente",
-  },
+  },*/
   {
     id: "SN",
     label: "SN — Adulto sin datos",
@@ -75,7 +75,7 @@ export default function RegistrarPacientePage() {
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
 
-  const [tipoRegistro, setTipoRegistro] = useState("normal");
+  const [tipoRegistro, setTipoRegistro] = useState("SN");
   const [form, setForm] = useState(formVacio());
   const [guardando, setGuardando] = useState(false);
 
@@ -88,6 +88,7 @@ export default function RegistrarPacientePage() {
     const userJson = sessionStorage.getItem("user");
     const user = userJson ? JSON.parse(userJson) : {};
     const codigoEmpleado = user.codigoEmpleado || user.usuario || "SYSTEMAS";
+    const usuarioId = user.usuario_ID || 1;
 
     if (tipoRegistro === "SN") {
       return {
@@ -95,6 +96,7 @@ export default function RegistrarPacientePage() {
         nombrePaciente: "SN",
         esNeonato: false,
         codigoEmpleadoAlta: codigoEmpleado,
+        usuarioRegistroAlta: usuarioId,
       };
     }
 
@@ -104,6 +106,7 @@ export default function RegistrarPacientePage() {
         nombrePaciente: "NN",
         esNeonato: true,
         codigoEmpleadoAlta: codigoEmpleado,
+        usuarioRegistroAlta: usuarioId,
       };
     }
 
@@ -113,6 +116,7 @@ export default function RegistrarPacientePage() {
       nombrePaciente: `${form.nombrePaciente} ${form.apellidosPaciente}`.trim(),
       esNeonato: false,
       codigoEmpleadoAlta: codigoEmpleado,
+      usuarioRegistroAlta: usuarioId,
     };
   };
 

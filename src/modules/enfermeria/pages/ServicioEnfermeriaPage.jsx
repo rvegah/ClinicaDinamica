@@ -102,6 +102,8 @@ export default function ServicioEnfermeriaPage() {
   const [pacienteSeleccionado, setPacienteSeleccionado] = useState(null);
   const pacienteRef = useRef(null);
 
+  const [tipoBusquedaPaciente, setTipoBusquedaPaciente] = useState("documento");
+
   // ─── Formulario de servicio ──────────────────────────────────────────────
   const [form, setForm] = useState({
     procedimiento_ID: "",
@@ -179,9 +181,11 @@ export default function ServicioEnfermeriaPage() {
     const t = setTimeout(async () => {
       setBuscandoPaciente(true);
       try {
-        const res = await pacienteService.buscarPacientes({
-          nombreCompletoPaciente: busquedaPaciente,
-        });
+        const res = await pacienteService.buscarPacientes(
+          tipoBusquedaPaciente === "documento"
+            ? { numeroDocumento: busquedaPaciente }
+            : { nombreCompletoPaciente: busquedaPaciente },
+        );
         setPacientesBuscados(res.exitoso ? res.datos || [] : []);
       } catch {
         setPacientesBuscados([]);
@@ -190,7 +194,7 @@ export default function ServicioEnfermeriaPage() {
       }
     }, 400);
     return () => clearTimeout(t);
-  }, [busquedaPaciente]);
+  }, [busquedaPaciente, tipoBusquedaPaciente]);
 
   const cambiarForm = (k, v) => setForm((p) => ({ ...p, [k]: v }));
 
@@ -230,6 +234,7 @@ export default function ServicioEnfermeriaPage() {
         costoMateriales: Number(form.costoMateriales) || 0,
         costoTotal: Number(form.costoTotal) || 0,
         codigoEmpleadoAlta: usuario.codigo,
+        usuarioRegistroAlta: usuario.id,
       };
 
       const res = await enfermeriaService.guardarServicio(payload);
@@ -350,6 +355,7 @@ export default function ServicioEnfermeriaPage() {
     });
     setInsumosAgregados([]);
     setServicioGuardado(null);
+    setTipoBusquedaPaciente("documento");
   };
 
   const imprimirServicio = () => {
@@ -618,12 +624,8 @@ export default function ServicioEnfermeriaPage() {
                 label="Precio Unitario (Bs.)"
                 type="number"
                 value={insumoForm.precioUnitario}
-                onChange={(e) =>
-                  setInsumoForm((p) => ({
-                    ...p,
-                    precioUnitario: e.target.value,
-                  }))
-                }
+                InputProps={{ readOnly: true }}
+                sx={{ "& .MuiOutlinedInput-root": { bgcolor: "#f9fafb" } }}
                 helperText={
                   insumoForm.precioReferencia
                     ? `Ref: Bs. ${insumoForm.precioReferencia}`
@@ -847,72 +849,119 @@ export default function ServicioEnfermeriaPage() {
               </Button>
             </Box>
           ) : (
-            <Box ref={pacienteRef} sx={{ position: "relative" }}>
-              <TextField
-                fullWidth
-                size="small"
-                placeholder="Buscar por nombre del paciente..."
-                value={busquedaPaciente}
-                onChange={(e) => setBusquedaPaciente(e.target.value)}
-                onBlur={() => setTimeout(() => setPacientesBuscados([]), 200)}
-                InputProps={{
-                  startAdornment: buscandoPaciente ? (
-                    <CircularProgress size={14} sx={{ mr: 1 }} />
-                  ) : (
-                    <Search sx={{ fontSize: 16, color: "#9ca3af", mr: 1 }} />
-                  ),
-                }}
-              />
-              {pacientesBuscados.length > 0 && (
-                <Portal>
-                  <Paper
+            <Box ref={pacienteRef}>
+              {/* Botones tipo búsqueda */}
+              <Box sx={{ display: "flex", gap: 1, mb: 1.5 }}>
+                {[
+                  { id: "documento", label: "Por Nro. Documento" },
+                  { id: "nombre", label: "Por Nombre" },
+                ].map((opt) => (
+                  <Button
+                    key={opt.id}
+                    size="small"
+                    variant={
+                      tipoBusquedaPaciente === opt.id ? "contained" : "outlined"
+                    }
+                    onClick={() => {
+                      setTipoBusquedaPaciente(opt.id);
+                      setBusquedaPaciente("");
+                      setPacientesBuscados([]);
+                    }}
                     sx={{
-                      position: "fixed",
-                      zIndex: 9999,
-                      width: pacienteRef.current
-                        ? pacienteRef.current.getBoundingClientRect().width
-                        : 500,
-                      top: pacienteRef.current
-                        ? pacienteRef.current.getBoundingClientRect().bottom + 4
-                        : 200,
-                      left: pacienteRef.current
-                        ? pacienteRef.current.getBoundingClientRect().left
-                        : 100,
-                      maxHeight: 240,
-                      overflow: "auto",
                       borderRadius: 1.5,
-                      boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
-                      border: "1px solid #e5e7eb",
-                      bgcolor: "white",
+                      textTransform: "none",
+                      fontWeight: 600,
+                      fontSize: 12,
+                      ...(tipoBusquedaPaciente === opt.id
+                        ? {
+                            bgcolor: "#2563eb",
+                            "&:hover": { bgcolor: "#1d4ed8" },
+                            boxShadow: "none",
+                          }
+                        : {
+                            borderColor: "#d1d5db",
+                            color: "#374151",
+                            "&:hover": { borderColor: "#9ca3af" },
+                          }),
                     }}
                   >
-                    {pacientesBuscados.map((p) => (
-                      <Box
-                        key={p.paciente_ID}
-                        onMouseDown={() => {
-                          setPacienteSeleccionado(p);
-                          setBusquedaPaciente("");
-                          setPacientesBuscados([]);
-                        }}
-                        sx={{
-                          px: 2,
-                          py: 1.25,
-                          cursor: "pointer",
-                          "&:hover": { bgcolor: "#f9fafb" },
-                          borderBottom: "1px solid #f3f4f6",
-                        }}
-                      >
-                        <Typography variant="body2" fontWeight={600}>
-                          {(p.nombreCompletoPaciente || "").trim()}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          Doc: {p.numeroDocumento}
-                        </Typography>
-                      </Box>
-                    ))}
-                  </Paper>
-                </Portal>
-              )}
+                    {opt.label}
+                  </Button>
+                ))}
+              </Box>
+
+              <Box sx={{ position: "relative" }}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  placeholder={
+                    tipoBusquedaPaciente === "documento"
+                      ? "Ej: 12345678"
+                      : "Ej: JOSE NOGALES"
+                  }
+                  value={busquedaPaciente}
+                  onChange={(e) => setBusquedaPaciente(e.target.value)}
+                  onBlur={() => setTimeout(() => setPacientesBuscados([]), 200)}
+                  InputProps={{
+                    startAdornment: buscandoPaciente ? (
+                      <CircularProgress size={14} sx={{ mr: 1 }} />
+                    ) : (
+                      <Search sx={{ fontSize: 16, color: "#9ca3af", mr: 1 }} />
+                    ),
+                  }}
+                />
+                {pacientesBuscados.length > 0 && (
+                  <Portal>
+                    <Paper
+                      sx={{
+                        position: "fixed",
+                        zIndex: 9999,
+                        width: pacienteRef.current
+                          ? pacienteRef.current.getBoundingClientRect().width
+                          : 500,
+                        top: pacienteRef.current
+                          ? pacienteRef.current.getBoundingClientRect().bottom +
+                            4
+                          : 200,
+                        left: pacienteRef.current
+                          ? pacienteRef.current.getBoundingClientRect().left
+                          : 100,
+                        maxHeight: 240,
+                        overflow: "auto",
+                        borderRadius: 1.5,
+                        boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
+                        border: "1px solid #e5e7eb",
+                        bgcolor: "white",
+                      }}
+                    >
+                      {pacientesBuscados.map((p) => (
+                        <Box
+                          key={p.paciente_ID}
+                          onMouseDown={() => {
+                            setPacienteSeleccionado(p);
+                            setBusquedaPaciente("");
+                            setPacientesBuscados([]);
+                          }}
+                          sx={{
+                            px: 2,
+                            py: 1.25,
+                            cursor: "pointer",
+                            "&:hover": { bgcolor: "#f9fafb" },
+                            borderBottom: "1px solid #f3f4f6",
+                          }}
+                        >
+                          <Typography variant="body2" fontWeight={600}>
+                            {(p.nombreCompletoPaciente || "").trim()}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            Doc: {p.numeroDocumento}
+                          </Typography>
+                        </Box>
+                      ))}
+                    </Paper>
+                  </Portal>
+                )}
+              </Box>
             </Box>
           )}
         </CardContent>
@@ -1123,8 +1172,8 @@ export default function ServicioEnfermeriaPage() {
               label="Costo Materiales (Bs.)"
               type="number"
               value={form.costoMateriales}
-              onChange={(e) => cambiarForm("costoMateriales", e.target.value)}
-              inputProps={{ min: 0, step: "0.01" }}
+              InputProps={{ readOnly: true }}
+              sx={{ "& .MuiOutlinedInput-root": { bgcolor: "#f9fafb" } }}
             />
             <TextField
               size="small"
