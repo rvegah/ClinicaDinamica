@@ -20,7 +20,7 @@ import {
   VisibilityOff,
   LocalHospital,
 } from "@mui/icons-material";
-import NetworkValidationService from "../../services/networkValidation";
+//import NetworkValidationService from "../../services/networkValidation";
 import ErrorDialog from "../../components/ErrorDialog";
 import { clinicColors } from "../../app/theme";
 import { useAuth } from "../../context/AuthContext";
@@ -135,7 +135,7 @@ function LoginPage() {
     setLoading(true);
 
     try {
-      console.log("🔍 Detectando IP local...");
+      /*console.log("🔍 Detectando IP local...");
       let localIP;
 
       try {
@@ -144,8 +144,9 @@ function LoginPage() {
       } catch (ipError) {
         console.warn("⚠️ No se pudo detectar IP, usando fallback");
         localIP = "192.168.0.1";
-      }
+      }*/
 
+      const localIP = "127.0.0.1";
       console.log("🔐 Intentando login con API...");
       const loginResult = await login({
         nombreUsuario: usuario,

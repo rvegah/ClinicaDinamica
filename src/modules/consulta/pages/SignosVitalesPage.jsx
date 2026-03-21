@@ -144,6 +144,8 @@ export default function SignosVitalesPage() {
     const usuario = getUsuario();
     setGuardando(true);
     try {
+      console.log('usuario triaje:', getUsuario());
+      console.log('user sessionStorage:', JSON.parse(sessionStorage.getItem("user") || "{}"));
       const payload = {
         cita_ID: citaSeleccionada.cita_ID,
         paciente_ID:
