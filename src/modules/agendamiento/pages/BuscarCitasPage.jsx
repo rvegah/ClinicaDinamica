@@ -1,8 +1,8 @@
 // src/modules/agendamiento/pages/BuscarCitasPage.jsx
 // Lista de citas con filtros + confirmar cita + guardar llegada
 
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Box,
   Typography,
@@ -17,57 +17,66 @@ import {
   IconButton,
   Tooltip,
   Divider,
-} from '@mui/material';
+} from "@mui/material";
 import {
   Search,
   Add,
   CheckCircle,
   HowToReg,
   FilterList,
-} from '@mui/icons-material';
-import { useSnackbar } from 'notistack';
-import agendamientoService from '../../../services/api/agendamientoService';
+} from "@mui/icons-material";
+import { useSnackbar } from "notistack";
+import agendamientoService from "../../../services/api/agendamientoService";
 
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
 const formatearFechaHora = (fechaStr) => {
-  if (!fechaStr) return '—';
+  if (!fechaStr) return "—";
   try {
-    return new Date(fechaStr).toLocaleString('es-BO', {
-      day: '2-digit', month: '2-digit', year: 'numeric',
-      hour: '2-digit', minute: '2-digit',
+    return new Date(fechaStr).toLocaleString("es-BO", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
-  } catch { return fechaStr; }
+  } catch {
+    return fechaStr;
+  }
 };
 
 const formatearFecha = (fechaStr) => {
-  if (!fechaStr) return '—';
+  if (!fechaStr) return "—";
   try {
-    return new Date(fechaStr).toLocaleDateString('es-BO', {
-      day: '2-digit', month: '2-digit', year: 'numeric',
+    return new Date(fechaStr).toLocaleDateString("es-BO", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
     });
-  } catch { return fechaStr; }
+  } catch {
+    return fechaStr;
+  }
 };
 
 // ─── CHIP DE ESTADO ───────────────────────────────────────────────────────────
 const ESTADO_COLORES = {
-  'Disponible':         { bg: '#f3f4f6', color: '#6b7280' },
-  'Pre-Reserva':        { bg: '#fef3c7', color: '#92400e' },
-  'Reservada':          { bg: '#dbeafe', color: '#1d4ed8' },
-  'Confirmada':         { bg: '#dcfce7', color: '#15803d' },
-  'En Sala de Espera':  { bg: '#fce7f3', color: '#be185d' },
-  'En Atención':        { bg: '#ede9fe', color: '#6d28d9' },
-  'Atendida':           { bg: '#d1fae5', color: '#065f46' },
-  'No Asistió':         { bg: '#fee2e2', color: '#991b1b' },
-  'Cancelada':          { bg: '#fee2e2', color: '#991b1b' },
-  'Reprogramada':       { bg: '#fef3c7', color: '#92400e' },
-  'Listo para Consulta':{ bg: '#ecfdf5', color: '#047857' },
+  Disponible: { bg: "#f3f4f6", color: "#6b7280" },
+  "Pre-Reserva": { bg: "#fef3c7", color: "#92400e" },
+  Reservada: { bg: "#dbeafe", color: "#1d4ed8" },
+  Confirmada: { bg: "#dcfce7", color: "#15803d" },
+  "En Sala de Espera": { bg: "#fce7f3", color: "#be185d" },
+  "En Atención": { bg: "#ede9fe", color: "#6d28d9" },
+  Atendida: { bg: "#d1fae5", color: "#065f46" },
+  "No Asistió": { bg: "#fee2e2", color: "#991b1b" },
+  Cancelada: { bg: "#fee2e2", color: "#991b1b" },
+  Reprogramada: { bg: "#fef3c7", color: "#92400e" },
+  "Listo para Consulta": { bg: "#ecfdf5", color: "#047857" },
 };
 
 function ChipEstado({ estado }) {
-  const col = ESTADO_COLORES[estado] || { bg: '#f3f4f6', color: '#374151' };
+  const col = ESTADO_COLORES[estado] || { bg: "#f3f4f6", color: "#374151" };
   return (
     <Chip
-      label={estado || '—'}
+      label={estado || "—"}
       size="small"
       sx={{
         bgcolor: col.bg,
@@ -75,7 +84,7 @@ function ChipEstado({ estado }) {
         fontWeight: 700,
         fontSize: 11,
         height: 20,
-        '& .MuiChip-label': { px: 1 },
+        "& .MuiChip-label": { px: 1 },
       }}
     />
   );
@@ -84,34 +93,34 @@ function ChipEstado({ estado }) {
 // ─── TABLA DE CITAS ───────────────────────────────────────────────────────────
 function TablaCitas({ citas, onConfirmar, onGuardarLlegada, procesando }) {
   const cols = [
-    { label: 'Paciente', width: '22%' },
-    { label: 'Médico', width: '15%' },
-    { label: 'Especialidad', width: '15%' },
-    { label: 'Fecha / Hora', width: '16%' },
-    { label: 'Tipo', width: '14%' },
-    { label: 'Estado', width: '12%' },
-    { label: '', width: '6%' },
+    { label: "Paciente", width: "22%" },
+    { label: "Médico", width: "15%" },
+    { label: "Especialidad", width: "15%" },
+    { label: "Fecha / Hora", width: "16%" },
+    { label: "Tipo", width: "14%" },
+    { label: "Estado", width: "12%" },
+    { label: "", width: "6%" },
   ];
 
-  const gridCols = cols.map((c) => c.width).join(' ');
+  const gridCols = cols.map((c) => c.width).join(" ");
 
   return (
     <Box
       sx={{
         borderRadius: 2,
-        border: '1px solid #e5e7eb',
-        overflow: 'hidden',
-        bgcolor: 'white',
-        boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+        border: "1px solid #e5e7eb",
+        overflow: "hidden",
+        bgcolor: "white",
+        boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
       }}
     >
       {/* Cabecera */}
       <Box
         sx={{
-          display: 'grid',
+          display: "grid",
           gridTemplateColumns: gridCols,
-          bgcolor: '#f9fafb',
-          borderBottom: '1px solid #e5e7eb',
+          bgcolor: "#f9fafb",
+          borderBottom: "1px solid #e5e7eb",
           px: 2,
           py: 1.25,
         }}
@@ -122,9 +131,9 @@ function TablaCitas({ citas, onConfirmar, onGuardarLlegada, procesando }) {
             variant="caption"
             sx={{
               fontWeight: 700,
-              color: '#6b7280',
-              letterSpacing: '0.05em',
-              textTransform: 'uppercase',
+              color: "#6b7280",
+              letterSpacing: "0.05em",
+              textTransform: "uppercase",
               fontSize: 11,
             }}
           >
@@ -136,46 +145,68 @@ function TablaCitas({ citas, onConfirmar, onGuardarLlegada, procesando }) {
       {/* Filas */}
       {citas.map((cita, idx) => {
         const esUltimo = idx === citas.length - 1;
-        const puedeConfirmar = ['Pre-Reserva', 'Reservada'].includes(cita.estadoCita);
-        const puedeLlegada = ['Confirmada'].includes(cita.estadoCita);
-        const enProceso = procesando === cita.codigoCita;
+        const puedeConfirmar = ["Pre-Reserva", "Reservada"].includes(
+          cita.estadoCita,
+        );
+        const puedeLlegada = ["Confirmada"].includes(cita.estadoCita);
+        const enProceso = procesando === cita.cita_ID;
 
         return (
           <Box
-            key={cita.codigoCita || idx}
+            key={cita.cita_ID || idx}
             sx={{
-              display: 'grid',
+              display: "grid",
               gridTemplateColumns: gridCols,
               px: 2,
               py: 1.5,
-              alignItems: 'center',
-              borderBottom: esUltimo ? 'none' : '1px solid #f3f4f6',
-              transition: 'background 0.15s',
-              '&:hover': { bgcolor: '#fafafa' },
+              alignItems: "center",
+              borderBottom: esUltimo ? "none" : "1px solid #f3f4f6",
+              transition: "background 0.15s",
+              "&:hover": { bgcolor: "#fafafa" },
             }}
           >
             {/* Paciente */}
             <Box>
-              <Typography variant="body2" fontWeight={600} color="#111827"
-                sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {(cita.nombrePaciente || '').trim() || '—'}
+              <Typography
+                variant="body2"
+                fontWeight={600}
+                color="#111827"
+                sx={{
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {(cita.nombrePaciente || "").trim() || "—"}
               </Typography>
               {cita.numeroDocumento && (
-                <Typography variant="caption" color="text.secondary" sx={{ fontFamily: 'monospace' }}>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ fontFamily: "monospace" }}
+                >
                   {cita.numeroDocumento}
                 </Typography>
               )}
             </Box>
 
             {/* Médico */}
-            <Typography variant="body2" color="#374151" fontSize={13}
-              sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {cita.nombreMedico || cita.codigoMedico || '—'}
+            <Typography
+              variant="body2"
+              color="#374151"
+              fontSize={13}
+              sx={{
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {cita.nombreMedico || cita.codigoMedico || "—"}
             </Typography>
 
             {/* Especialidad */}
             <Typography variant="body2" color="#374151" fontSize={13}>
-              {cita.nombreEspecialidad || '—'}
+              {cita.nombreEspecialidad || "—"}
             </Typography>
 
             {/* Fecha / Hora */}
@@ -184,21 +215,29 @@ function TablaCitas({ citas, onConfirmar, onGuardarLlegada, procesando }) {
                 {formatearFecha(cita.fechaCita)}
               </Typography>
               <Typography variant="caption" color="text.secondary">
-                {cita.horaInicio || '—'}
+                {cita.horaInicio || "—"}
               </Typography>
             </Box>
 
             {/* Tipo */}
-            <Typography variant="body2" color="#374151" fontSize={12}
-              sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {cita.nombreTipoConsulta || '—'}
+            <Typography
+              variant="body2"
+              color="#374151"
+              fontSize={12}
+              sx={{
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {cita.nombreTipoConsulta || "—"}
             </Typography>
 
             {/* Estado */}
             <ChipEstado estado={cita.estadoCita} />
 
             {/* Acciones */}
-            <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'flex-end' }}>
+            <Box sx={{ display: "flex", gap: 0.5, justifyContent: "flex-end" }}>
               {puedeConfirmar && (
                 <Tooltip title="Confirmar cita" arrow>
                   <span>
@@ -207,12 +246,12 @@ function TablaCitas({ citas, onConfirmar, onGuardarLlegada, procesando }) {
                       onClick={() => onConfirmar(cita)}
                       disabled={enProceso}
                       sx={{
-                        color: '#15803d',
-                        bgcolor: '#dcfce7',
+                        color: "#15803d",
+                        bgcolor: "#dcfce7",
                         borderRadius: 1,
                         width: 28,
                         height: 28,
-                        '&:hover': { bgcolor: '#bbf7d0' },
+                        "&:hover": { bgcolor: "#bbf7d0" },
                       }}
                     >
                       {enProceso ? (
@@ -232,12 +271,12 @@ function TablaCitas({ citas, onConfirmar, onGuardarLlegada, procesando }) {
                       onClick={() => onGuardarLlegada(cita)}
                       disabled={enProceso}
                       sx={{
-                        color: '#1d4ed8',
-                        bgcolor: '#dbeafe',
+                        color: "#1d4ed8",
+                        bgcolor: "#dbeafe",
                         borderRadius: 1,
                         width: 28,
                         height: 28,
-                        '&:hover': { bgcolor: '#bfdbfe' },
+                        "&:hover": { bgcolor: "#bfdbfe" },
                       }}
                     >
                       {enProceso ? (
@@ -267,14 +306,14 @@ export default function BuscarCitasPage() {
   const [especialidades, setEspecialidades] = useState([]);
 
   // Filtros
-  const [filtroMedico, setFiltroMedico] = useState('');
-  const [filtroEspecialidad, setFiltroEspecialidad] = useState('');
-  const [filtroPaciente, setFiltroPaciente] = useState('');
+  const [filtroMedico, setFiltroMedico] = useState("");
+  const [filtroEspecialidad, setFiltroEspecialidad] = useState("");  
   const [filtroFechaInicio, setFiltroFechaInicio] = useState(
-    new Date().toISOString().split('T')[0]
+    new Date().toISOString().split("T")[0],
   );
-  const [filtroFechaFin, setFiltroFechaFin] = useState('');
-
+  const [filtroFechaFin, setFiltroFechaFin] = useState(
+    new Date().toISOString().split("T")[0],
+  );
   // Resultados
   const [citas, setCitas] = useState([]);
   const [buscando, setBuscando] = useState(false);
@@ -299,7 +338,6 @@ export default function BuscarCitasPage() {
       const res = await agendamientoService.buscarCitas({
         codigoMedico: filtroMedico || undefined,
         codigoEspecialidad: filtroEspecialidad || undefined,
-        codigoPaciente: filtroPaciente || undefined,
         fechaInicio: filtroFechaInicio || undefined,
         fechaFin: filtroFechaFin || undefined,
       });
@@ -308,13 +346,15 @@ export default function BuscarCitasPage() {
         setCitas(res.datos || []);
         setBuscado(true);
         if ((res.datos || []).length === 0) {
-          enqueueSnackbar('No se encontraron citas', { variant: 'info' });
+          enqueueSnackbar("No se encontraron citas", { variant: "info" });
         }
       } else {
         // 404 = sin resultados
         setCitas([]);
         setBuscado(true);
-        enqueueSnackbar('No se encontraron citas con esos filtros', { variant: 'info' });
+        enqueueSnackbar("No se encontraron citas con esos filtros", {
+          variant: "info",
+        });
       }
     } catch (err) {
       // 404 del API = sin citas
@@ -326,30 +366,41 @@ export default function BuscarCitasPage() {
   };
 
   const handleConfirmar = async (cita) => {
-    setProcesando(cita.codigoCita);
+    setProcesando(cita.cita_ID);
     try {
-      const userJson = sessionStorage.getItem('user');
+      const userJson = sessionStorage.getItem("user");
       const user = userJson ? JSON.parse(userJson) : {};
-      const usuarioId = user.id || user.userId || 1;
+      const usuarioId = user.usuario_ID || user.id || 1;
 
-      const res = await agendamientoService.confirmarCita(cita.codigoCita, usuarioId);
-      enqueueSnackbar(res.mensaje || '✅ Cita confirmada', { variant: 'success' });
+      const res = await agendamientoService.confirmarCita(
+        cita.cita_ID,
+        usuarioId,
+      );
+      enqueueSnackbar(res.mensaje || "✅ Cita confirmada", {
+        variant: "success",
+      });
       handleBuscar();
     } catch (err) {
-      enqueueSnackbar(err.message || 'Error al confirmar cita', { variant: 'error' });
+      enqueueSnackbar(err.message || "Error al confirmar cita", {
+        variant: "error",
+      });
     } finally {
       setProcesando(null);
     }
   };
 
   const handleGuardarLlegada = async (cita) => {
-    setProcesando(cita.codigoCita);
+    setProcesando(cita.cita_ID);
     try {
-      const res = await agendamientoService.guardarLlegada(cita.codigoCita);
-      enqueueSnackbar(res.mensaje || '✅ Llegada registrada', { variant: 'success' });
+      const res = await agendamientoService.guardarLlegada(cita.cita_ID);
+      enqueueSnackbar(res.mensaje || "✅ Llegada registrada", {
+        variant: "success",
+      });
       handleBuscar();
     } catch (err) {
-      enqueueSnackbar(err.message || 'Error al registrar llegada', { variant: 'error' });
+      enqueueSnackbar(err.message || "Error al registrar llegada", {
+        variant: "error",
+      });
     } finally {
       setProcesando(null);
     }
@@ -357,15 +408,22 @@ export default function BuscarCitasPage() {
 
   const card = {
     borderRadius: 2,
-    boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
-    border: '1px solid #e5e7eb',
-    bgcolor: 'white',
+    boxShadow: "0 1px 4px rgba(0,0,0,0.08)",
+    border: "1px solid #e5e7eb",
+    bgcolor: "white",
   };
 
   return (
-    <Box sx={{ maxWidth: 1200, mx: 'auto' }}>
+    <Box sx={{ maxWidth: 1200, mx: "auto" }}>
       {/* HEADER */}
-      <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <Box
+        sx={{
+          mb: 3,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
         <Box>
           <Typography variant="h5" fontWeight={700} color="#111827">
             Citas Médicas
@@ -377,14 +435,14 @@ export default function BuscarCitasPage() {
         <Button
           variant="contained"
           startIcon={<Add />}
-          onClick={() => navigate('/agendamiento/reservar')}
+          onClick={() => navigate("/agendamiento/reservar")}
           sx={{
-            bgcolor: '#2563eb',
-            '&:hover': { bgcolor: '#1d4ed8' },
+            bgcolor: "#2563eb",
+            "&:hover": { bgcolor: "#1d4ed8" },
             borderRadius: 1.5,
             fontWeight: 700,
-            textTransform: 'none',
-            boxShadow: 'none',
+            textTransform: "none",
+            boxShadow: "none",
             py: 1.2,
             px: 2.5,
           }}
@@ -400,16 +458,20 @@ export default function BuscarCitasPage() {
             variant="body2"
             fontWeight={700}
             color="#111827"
-            sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}
+            sx={{ mb: 2, display: "flex", alignItems: "center", gap: 1 }}
           >
-            <FilterList sx={{ fontSize: 16, color: '#6b7280' }} />
+            <FilterList sx={{ fontSize: 16, color: "#6b7280" }} />
             Filtros de Búsqueda
           </Typography>
 
           <Box
             sx={{
-              display: 'grid',
-              gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr 1fr 1fr' },
+              display: "grid",
+              gridTemplateColumns: {
+                xs: "1fr",
+                sm: "1fr 1fr",
+                md: "1fr 1fr 1fr 1fr",
+              },
               gap: 1.5,
               mb: 2,
             }}
@@ -446,15 +508,6 @@ export default function BuscarCitasPage() {
 
             <TextField
               size="small"
-              label="ID Paciente"
-              type="number"
-              value={filtroPaciente}
-              onChange={(e) => setFiltroPaciente(e.target.value)}
-              placeholder="Ej: 7"
-            />
-
-            <TextField
-              size="small"
               label="Fecha Inicio"
               type="date"
               value={filtroFechaInicio}
@@ -474,59 +527,93 @@ export default function BuscarCitasPage() {
 
           <Button
             variant="contained"
-            startIcon={buscando ? <CircularProgress size={15} color="inherit" /> : <Search />}
+            startIcon={
+              buscando ? (
+                <CircularProgress size={15} color="inherit" />
+              ) : (
+                <Search />
+              )
+            }
             onClick={handleBuscar}
             disabled={buscando}
             sx={{
-              bgcolor: '#2563eb',
-              '&:hover': { bgcolor: '#1d4ed8' },
+              bgcolor: "#2563eb",
+              "&:hover": { bgcolor: "#1d4ed8" },
               borderRadius: 1.5,
               fontWeight: 700,
-              textTransform: 'none',
-              boxShadow: 'none',
+              textTransform: "none",
+              boxShadow: "none",
             }}
           >
-            {buscando ? 'Buscando...' : 'Buscar Citas'}
+            {buscando ? "Buscando..." : "Buscar Citas"}
           </Button>
         </CardContent>
       </Card>
 
       {/* LEYENDA DE ACCIONES */}
-      <Box sx={{ display: 'flex', gap: 2, mb: 1.5, flexWrap: 'wrap' }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-          <Box sx={{ width: 20, height: 20, borderRadius: 0.75, bgcolor: '#dcfce7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <CheckCircle sx={{ fontSize: 12, color: '#15803d' }} />
+      <Box sx={{ display: "flex", gap: 2, mb: 1.5, flexWrap: "wrap" }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+          <Box
+            sx={{
+              width: 20,
+              height: 20,
+              borderRadius: 0.75,
+              bgcolor: "#dcfce7",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <CheckCircle sx={{ fontSize: 12, color: "#15803d" }} />
           </Box>
-          <Typography variant="caption" color="text.secondary">Confirmar cita (Pre-Reserva → Confirmada)</Typography>
+          <Typography variant="caption" color="text.secondary">
+            Confirmar cita (Pre-Reserva → Confirmada)
+          </Typography>
         </Box>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-          <Box sx={{ width: 20, height: 20, borderRadius: 0.75, bgcolor: '#dbeafe', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <HowToReg sx={{ fontSize: 12, color: '#1d4ed8' }} />
+        <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+          <Box
+            sx={{
+              width: 20,
+              height: 20,
+              borderRadius: 0.75,
+              bgcolor: "#dbeafe",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <HowToReg sx={{ fontSize: 12, color: "#1d4ed8" }} />
           </Box>
-          <Typography variant="caption" color="text.secondary">Registrar llegada (Confirmada → En Sala de Espera)</Typography>
+          <Typography variant="caption" color="text.secondary">
+            Registrar llegada (Confirmada → En Sala de Espera)
+          </Typography>
         </Box>
       </Box>
 
       {/* RESULTADOS */}
       {buscado && (
         <>
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5 }}>
+          <Box sx={{ display: "flex", alignItems: "center", mb: 1.5 }}>
             <Typography variant="body2" color="text.secondary" fontWeight={600}>
               {citas.length === 0
-                ? 'Sin resultados'
-                : `${citas.length} cita${citas.length !== 1 ? 's' : ''} encontrada${citas.length !== 1 ? 's' : ''}`}
+                ? "Sin resultados"
+                : `${citas.length} cita${citas.length !== 1 ? "s" : ""} encontrada${citas.length !== 1 ? "s" : ""}`}
             </Typography>
           </Box>
 
           {citas.length === 0 ? (
             <Alert
               severity="info"
-              sx={{ borderRadius: 1.5, border: '1px solid #bfdbfe', bgcolor: '#eff6ff' }}
+              sx={{
+                borderRadius: 1.5,
+                border: "1px solid #bfdbfe",
+                bgcolor: "#eff6ff",
+              }}
             >
-              No se encontraron citas con los filtros seleccionados. ¿Desea{' '}
+              No se encontraron citas con los filtros seleccionados. ¿Desea{" "}
               <strong
-                style={{ cursor: 'pointer', textDecoration: 'underline' }}
-                onClick={() => navigate('/agendamiento/reservar')}
+                style={{ cursor: "pointer", textDecoration: "underline" }}
+                onClick={() => navigate("/agendamiento/reservar")}
               >
                 agendar una nueva cita
               </strong>
@@ -545,7 +632,7 @@ export default function BuscarCitasPage() {
 
       {/* Estado inicial */}
       {!buscado && (
-        <Box sx={{ textAlign: 'center', py: 8, color: '#9ca3af' }}>
+        <Box sx={{ textAlign: "center", py: 8, color: "#9ca3af" }}>
           <Search sx={{ fontSize: 48, mb: 2, opacity: 0.4 }} />
           <Typography variant="body1" fontWeight={500}>
             Use los filtros para buscar citas médicas
