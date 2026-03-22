@@ -1,6 +1,6 @@
 // src/App.jsx - CORREGIDO (sin BrowserRouter interno)
 
-import React from "react";
+import React, { useEffect } from "react";
 import { SnackbarProvider } from "notistack";
 import { ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
@@ -132,7 +132,7 @@ function ProtectedRoutes() {
   );
 }
 
-function App() {
+function App() {   
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
