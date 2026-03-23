@@ -21,6 +21,11 @@ import {
   Fade,
   Grid,
   Button,
+  TextField,
+  Tab,
+  Tabs,
+  CircularProgress,
+  MenuItem,
 } from "@mui/material";
 import {
   MedicalServices,
@@ -38,6 +43,10 @@ import {
   BarChart,
 } from "@mui/icons-material";
 import clinicaLogo from "../../assets/CLINICA.png";
+import atencionMedicaService from "../../services/api/atencionMedicaService";
+import clinicaApiClient from "../../services/api/clinicaApiClient";
+import agendamientoService from "../../services/api/agendamientoService";
+import enfermeriaService from "../../services/api/enfermeriaService";
 
 // ── Ícono según descripción ───────────────────────────────────────────────────
 const getIconForService = (descripcion) => {
@@ -406,16 +415,63 @@ function Dashboard() {
   const verTotales = esSuperAdmin || esAdmisionista;
   const [totales, setTotales] = useState(null);
 
+  const hoy = new Date().toISOString().split("T")[0];
+  const [fechaReporte, setFechaReporte] = useState(hoy);
+  const [medicoSeleccionadoReporte, setMedicoSeleccionadoReporte] =
+    useState("");
+  const [enfermeraSeleccionadaReporte, setEnfermeraSeleccionadaReporte] =
+    useState("");
+  const [medicos, setMedicos] = useState([]);
+  const [reporteMedico, setReporteMedico] = useState([]);
+  const [reporteEnfermera, setReporteEnfermera] = useState([]);
+  const [cargandoReporte, setCargandoReporte] = useState(false);
+  const [tabReporte, setTabReporte] = useState(0);
+  const [enfermeras, setEnfermeras] = useState([]);
+
+  const cargarReportes = async () => {
+    if (!medicoSeleccionadoReporte && !enfermeraSeleccionadaReporte) return;
+    setCargandoReporte(true);
+    try {
+      const [med, enf] = await Promise.all([
+        medicoSeleccionadoReporte
+          ? atencionMedicaService.atencionMedico({
+              medicoId: medicoSeleccionadoReporte,
+              fecha: fechaReporte,
+            })
+          : Promise.resolve({ datos: [] }),
+        enfermeraSeleccionadaReporte
+          ? atencionMedicaService.atencionEnfermera({
+              enfermeraId: enfermeraSeleccionadaReporte,
+              fecha: fechaReporte,
+            })
+          : Promise.resolve({ datos: [] }),
+      ]);
+      setReporteMedico(med.datos || []);
+      setReporteEnfermera(enf.datos || []);
+    } catch {
+    } finally {
+      setCargandoReporte(false);
+    }
+  };
+
+  // Cargar lista de médicos y enfermeras una vez
   useEffect(() => {
-    fetch(
-      "https://dinamax-clinicas.farmadinamica.com.bo/api/farmalink-clinica/Reportes/ReporteAtencionMedica",
-      { headers: { accept: "*/*" } },
-    )
+    if (!verTotales) return;
+    agendamientoService
+      .listarMedicos()
+      .then((res) => setMedicos(res.datos || []))
+      .catch(() => {});
+    enfermeriaService
+      .listarEnfermeras() // ← agregar esto
+      .then((res) => setEnfermeras(res.datos || []))
+      .catch(() => {});
+  }, [verTotales]);
+
+  useEffect(() => {
+    clinicaApiClient
+      .get("/Reportes/ReporteAtencionMedica")
       .then((res) => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json();
-      })
-      .then((data) => {
+        const data = res.data;
         if (data.exitoso && Array.isArray(data.datos)) setServicios(data.datos);
         else throw new Error(data.mensaje || "Respuesta inválida");
       })
@@ -428,13 +484,10 @@ function Dashboard() {
 
   useEffect(() => {
     if (!verTotales) return;
-    fetch(
-      "https://dinamax-clinicas.farmadinamica.com.bo/api/farmalink-clinica/Reportes/ReporteIngresos",
-      { headers: { accept: "*/*" } },
-    )
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.exitoso) setTotales(d.datos);
+    clinicaApiClient
+      .get("/Reportes/ReporteIngresos")
+      .then((r) => {
+        if (r.data.exitoso) setTotales(r.data.datos);
       })
       .catch(() => {});
   }, [verTotales]);
@@ -694,67 +747,72 @@ function Dashboard() {
           ))}
         </Grid>
       )}
+      {verTotales && (
+        <>
+          {/* ── TÍTULO ───────────────────────────────────────────────────────── */}
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2.5 }}>
+            <Typography
+              sx={{
+                fontWeight: 800,
+                color: "#1A2B4A",
+                fontSize: "0.95rem",
+                whiteSpace: "nowrap",
+              }}
+            >
+              Servicios Disponibles
+            </Typography>
+            <Box
+              sx={{ flex: 1, height: "1px", bgcolor: "rgba(26,82,118,0.15)" }}
+            />
+            <Typography
+              sx={{
+                fontSize: "0.72rem",
+                color: "#7F8C8D",
+                fontWeight: 600,
+                whiteSpace: "nowrap",
+              }}
+            >
+              Selecciona una categoría para ver el detalle
+            </Typography>
+          </Box>
 
-      {/* ── TÍTULO ───────────────────────────────────────────────────────── */}
-      <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2.5 }}>
-        <Typography
-          sx={{
-            fontWeight: 800,
-            color: "#1A2B4A",
-            fontSize: "0.95rem",
-            whiteSpace: "nowrap",
-          }}
-        >
-          Servicios Disponibles
-        </Typography>
-        <Box sx={{ flex: 1, height: "1px", bgcolor: "rgba(26,82,118,0.15)" }} />
-        <Typography
-          sx={{
-            fontSize: "0.72rem",
-            color: "#7F8C8D",
-            fontWeight: 600,
-            whiteSpace: "nowrap",
-          }}
-        >
-          Selecciona una categoría para ver el detalle
-        </Typography>
-      </Box>      
-
-      {/* ── LOADING ──────────────────────────────────────────────────────── */}
-      {loading && (
-        <Grid container spacing={2}>
-          {[1, 2, 3].map((i) => (
-            <Grid item xs={12} sm={6} md={4} key={i}>
-              <Skeleton
-                variant="rounded"
-                height={140}
-                sx={{ borderRadius: 3, bgcolor: "rgba(26,82,118,0.07)" }}
-              />
+          {/* ── LOADING ──────────────────────────────────────────────────────── */}
+          {loading && (
+            <Grid container spacing={2}>
+              {[1, 2, 3].map((i) => (
+                <Grid item xs={12} sm={6} md={4} key={i}>
+                  <Skeleton
+                    variant="rounded"
+                    height={140}
+                    sx={{ borderRadius: 3, bgcolor: "rgba(26,82,118,0.07)" }}
+                  />
+                </Grid>
+              ))}
             </Grid>
-          ))}
-        </Grid>
-      )}
+          )}
 
-      {/* ── ERROR ────────────────────────────────────────────────────────── */}
-      {!loading && error && (
-        <Alert severity="error" sx={{ borderRadius: 3 }}>
-          No se pudieron cargar los servicios: {error}
-        </Alert>
-      )}
+          {/* ── ERROR ────────────────────────────────────────────────────────── */}
+          {!loading && error && (
+            <Alert severity="error" sx={{ borderRadius: 3 }}>
+              No se pudieron cargar los servicios: {error}
+            </Alert>
+          )}
 
-      {/* ── CARDS DE CATEGORÍA ───────────────────────────────────────────── */}
-      {!loading && !error && (
-        <Grid container spacing={2}>
-          {Object.entries(categorias).map(([cat, items]) => (
-            <Grid item xs={12} sm={6} md={4} key={cat}>
-              <CategoryCard
-                categoria={cat}
-                servicios={items}
-                onClick={() => setDialogCat(cat)}
-              />
+          {/* ── CARDS DE CATEGORÍA ───────────────────────────────────────────── */}
+          {!loading && !error && (
+            <Grid container spacing={2}>
+              {Object.entries(categorias).map(([cat, items]) => (
+                <Grid item xs={12} sm={6} md={4} key={cat}>
+                  <CategoryCard
+                    categoria={cat}
+                    servicios={items}
+                    onClick={() => setDialogCat(cat)}
+                  />
+                </Grid>
+              ))}
             </Grid>
-          ))}
-        </Grid>
+          )}
+        </>
       )}
 
       {/* ── DIALOG ───────────────────────────────────────────────────────── */}
@@ -764,6 +822,407 @@ function Dashboard() {
         categoria={dialogCat || ""}
         servicios={serviciosDialog}
       />
+
+      {verTotales && (
+        <>
+          {/* ── TÍTULO ───────────────────────────────────────────────────────── */}
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2.5 }}>
+            <Typography
+              sx={{
+                fontWeight: 800,
+                color: "#1A2B4A",
+                fontSize: "0.95rem",
+                whiteSpace: "nowrap",
+              }}
+            >
+              REPORTES
+            </Typography>
+            <Box
+              sx={{ flex: 1, height: "1px", bgcolor: "rgba(26,82,118,0.15)" }}
+            />
+            <Typography
+              sx={{
+                fontSize: "0.72rem",
+                color: "#7F8C8D",
+                fontWeight: 600,
+                whiteSpace: "nowrap",
+              }}
+            >
+              Selecciona un médico para ver el detalle
+            </Typography>
+          </Box>
+          {/* ── REPORTE MÉDICO ── */}
+          <Paper
+            elevation={0}
+            sx={{
+              mb: 2,
+              borderRadius: 2,
+              border: "1px solid #e5e7eb",
+              overflow: "hidden",
+            }}
+          >
+            <Box
+              sx={{
+                px: 2.5,
+                py: 1.75,
+                bgcolor: "#eff6ff",
+                borderBottom: "1px solid #bfdbfe",
+              }}
+            >
+              <Typography
+                sx={{
+                  fontWeight: 800,
+                  fontSize: "0.9rem",
+                  color: "#1e40af",
+                  mb: 1.5,
+                }}
+              >
+                🩺 Atenciones Médicas
+              </Typography>
+              <Box
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr auto" },
+                  gap: 1.5,
+                }}
+              >
+                <TextField
+                  size="small"
+                  type="date"
+                  label="Fecha"
+                  value={fechaReporte}
+                  onChange={(e) => setFechaReporte(e.target.value)}
+                  InputLabelProps={{ shrink: true }}
+                />
+                <TextField
+                  select
+                  size="small"
+                  label="Médico"
+                  value={medicoSeleccionadoReporte}
+                  onChange={(e) => setMedicoSeleccionadoReporte(e.target.value)}
+                >
+                  <MenuItem value="">— Seleccione —</MenuItem>
+                  {medicos.map((m) => (
+                    <MenuItem key={m.medico_ID} value={m.medico_ID}>
+                      {m.nombreMedico}
+                    </MenuItem>
+                  ))}
+                </TextField>
+                <Button
+                  variant="contained"
+                  onClick={async () => {
+                    if (!medicoSeleccionadoReporte) return;
+                    setCargandoReporte(true);
+                    try {
+                      const med = await atencionMedicaService.atencionMedico({
+                        medicoId: medicoSeleccionadoReporte,
+                        fecha: fechaReporte,
+                      });
+                      setReporteMedico(med.datos || []);
+                    } catch {
+                    } finally {
+                      setCargandoReporte(false);
+                    }
+                  }}
+                  disabled={cargandoReporte || !medicoSeleccionadoReporte}
+                  sx={{
+                    bgcolor: "#1e40af",
+                    "&:hover": { bgcolor: "#1d4ed8" },
+                    textTransform: "none",
+                    fontWeight: 700,
+                    borderRadius: 1.5,
+                    boxShadow: "none",
+                    minWidth: 90,
+                  }}
+                >
+                  {cargandoReporte ? (
+                    <CircularProgress size={14} color="inherit" />
+                  ) : (
+                    "Buscar"
+                  )}
+                </Button>
+              </Box>
+            </Box>
+            {reporteMedico.length === 0 ? (
+              <Box sx={{ py: 3, textAlign: "center" }}>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ fontStyle: "italic" }}
+                >
+                  {medicoSeleccionadoReporte
+                    ? "Sin atenciones para esta fecha"
+                    : "Seleccione un médico y presione Buscar"}
+                </Typography>
+              </Box>
+            ) : (
+              <>
+                <Box
+                  sx={{
+                    display: "grid",
+                    gridTemplateColumns: "2fr 1.2fr 2fr 2fr",
+                    bgcolor: "#f9fafb",
+                    borderBottom: "1px solid #e5e7eb",
+                    px: 2,
+                    py: 1,
+                  }}
+                >
+                  {["Paciente", "Hora", "Motivo", "Diagnóstico"].map((h) => (
+                    <Typography
+                      key={h}
+                      variant="caption"
+                      sx={{
+                        fontWeight: 700,
+                        color: "#6b7280",
+                        textTransform: "uppercase",
+                        fontSize: 10,
+                      }}
+                    >
+                      {h}
+                    </Typography>
+                  ))}
+                </Box>
+                {reporteMedico.map((r, i) => (
+                  <Box
+                    key={i}
+                    sx={{
+                      display: "grid",
+                      gridTemplateColumns: "2fr 1.2fr 2fr 2fr",
+                      px: 2,
+                      py: 1.25,
+                      borderBottom:
+                        i < reporteMedico.length - 1
+                          ? "1px solid #f3f4f6"
+                          : "none",
+                      "&:hover": { bgcolor: "#fafafa" },
+                    }}
+                  >
+                    <Typography
+                      variant="caption"
+                      color="#111827"
+                      fontWeight={600}
+                    >
+                      {r.paciente}
+                    </Typography>
+                    <Typography variant="caption" color="#6b7280">
+                      {r.fecha?.split(" ")[1]?.slice(0, 5) || "—"}
+                    </Typography>
+                    <Typography variant="caption" color="#374151">
+                      {r.motivoConsulta || "—"}
+                    </Typography>
+                    <Typography variant="caption" color="#374151">
+                      {r.diagnostico || "—"}
+                    </Typography>
+                  </Box>
+                ))}
+                <Box
+                  sx={{
+                    px: 2,
+                    py: 1,
+                    bgcolor: "#eff6ff",
+                    borderTop: "1px solid #bfdbfe",
+                  }}
+                >
+                  <Typography
+                    variant="caption"
+                    color="#1e40af"
+                    fontWeight={700}
+                  >
+                    {reporteMedico[0]?.medico} · {reporteMedico.length}{" "}
+                    atención(es)
+                  </Typography>
+                </Box>
+              </>
+            )}
+          </Paper>
+
+          {/* ── REPORTE ENFERMERÍA ── */}
+          <Paper
+            elevation={0}
+            sx={{
+              mb: 3,
+              borderRadius: 2,
+              border: "1px solid #e5e7eb",
+              overflow: "hidden",
+            }}
+          >
+            <Box
+              sx={{
+                px: 2.5,
+                py: 1.75,
+                bgcolor: "#f0fdf4",
+                borderBottom: "1px solid #a7f3d0",
+              }}
+            >
+              <Typography
+                sx={{
+                  fontWeight: 800,
+                  fontSize: "0.9rem",
+                  color: "#065f46",
+                  mb: 1.5,
+                }}
+              >
+                💉 Atenciones de Enfermería
+              </Typography>
+              <Box
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr auto" },
+                  gap: 1.5,
+                }}
+              >
+                <TextField
+                  size="small"
+                  type="date"
+                  label="Fecha"
+                  value={fechaReporte}
+                  onChange={(e) => setFechaReporte(e.target.value)}
+                  InputLabelProps={{ shrink: true }}
+                />
+                <TextField
+                  select
+                  size="small"
+                  label="Enfermera"
+                  value={enfermeraSeleccionadaReporte}
+                  onChange={(e) =>
+                    setEnfermeraSeleccionadaReporte(e.target.value)
+                  }
+                >
+                  <MenuItem value="">— Seleccione —</MenuItem>
+                  {enfermeras.map((e) => (
+                    <MenuItem key={e.enfermera_ID} value={e.enfermera_ID}>
+                      {e.nombreEnfermera}
+                    </MenuItem>
+                  ))}
+                </TextField>
+                <Button
+                  variant="contained"
+                  onClick={async () => {
+                    if (!enfermeraSeleccionadaReporte) return;
+                    setCargandoReporte(true);
+                    try {
+                      const enf = await atencionMedicaService.atencionEnfermera(
+                        {
+                          enfermeraId: enfermeraSeleccionadaReporte,
+                          fecha: fechaReporte,
+                        },
+                      );
+                      setReporteEnfermera(enf.datos || []);
+                    } catch {
+                    } finally {
+                      setCargandoReporte(false);
+                    }
+                  }}
+                  disabled={cargandoReporte || !enfermeraSeleccionadaReporte}
+                  sx={{
+                    bgcolor: "#065f46",
+                    "&:hover": { bgcolor: "#047857" },
+                    textTransform: "none",
+                    fontWeight: 700,
+                    borderRadius: 1.5,
+                    boxShadow: "none",
+                    minWidth: 90,
+                  }}
+                >
+                  {cargandoReporte ? (
+                    <CircularProgress size={14} color="inherit" />
+                  ) : (
+                    "Buscar"
+                  )}
+                </Button>
+              </Box>
+            </Box>
+            {reporteEnfermera.length === 0 ? (
+              <Box sx={{ py: 3, textAlign: "center" }}>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ fontStyle: "italic" }}
+                >
+                  {enfermeraSeleccionadaReporte
+                    ? "Sin atenciones para esta fecha"
+                    : "Seleccione una enfermera y presione Buscar"}
+                </Typography>
+              </Box>
+            ) : (
+              <>
+                <Box
+                  sx={{
+                    display: "grid",
+                    gridTemplateColumns: "2fr 1.2fr 2fr",
+                    bgcolor: "#f9fafb",
+                    borderBottom: "1px solid #e5e7eb",
+                    px: 2,
+                    py: 1,
+                  }}
+                >
+                  {["Paciente", "Hora", "Motivo"].map((h) => (
+                    <Typography
+                      key={h}
+                      variant="caption"
+                      sx={{
+                        fontWeight: 700,
+                        color: "#6b7280",
+                        textTransform: "uppercase",
+                        fontSize: 10,
+                      }}
+                    >
+                      {h}
+                    </Typography>
+                  ))}
+                </Box>
+                {reporteEnfermera.map((r, i) => (
+                  <Box
+                    key={i}
+                    sx={{
+                      display: "grid",
+                      gridTemplateColumns: "2fr 1.2fr 2fr",
+                      px: 2,
+                      py: 1.25,
+                      borderBottom:
+                        i < reporteEnfermera.length - 1
+                          ? "1px solid #f3f4f6"
+                          : "none",
+                      "&:hover": { bgcolor: "#fafafa" },
+                    }}
+                  >
+                    <Typography
+                      variant="caption"
+                      color="#111827"
+                      fontWeight={600}
+                    >
+                      {r.paciente}
+                    </Typography>
+                    <Typography variant="caption" color="#6b7280">
+                      {r.fecha?.split(" ")[1]?.slice(0, 5) || "—"}
+                    </Typography>
+                    <Typography variant="caption" color="#374151">
+                      {r.motivoAtencion || "—"}
+                    </Typography>
+                  </Box>
+                ))}
+                <Box
+                  sx={{
+                    px: 2,
+                    py: 1,
+                    bgcolor: "#f0fdf4",
+                    borderTop: "1px solid #a7f3d0",
+                  }}
+                >
+                  <Typography
+                    variant="caption"
+                    color="#065f46"
+                    fontWeight={700}
+                  >
+                    {reporteEnfermera[0]?.enfermera} · {reporteEnfermera.length}{" "}
+                    atención(es)
+                  </Typography>
+                </Box>
+              </>
+            )}
+          </Paper>
+        </>
+      )}
     </Box>
   );
 }

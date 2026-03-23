@@ -144,8 +144,11 @@ export default function SignosVitalesPage() {
     const usuario = getUsuario();
     setGuardando(true);
     try {
-      console.log('usuario triaje:', getUsuario());
-      console.log('user sessionStorage:', JSON.parse(sessionStorage.getItem("user") || "{}"));
+      console.log("usuario triaje:", getUsuario());
+      console.log(
+        "user sessionStorage:",
+        JSON.parse(sessionStorage.getItem("user") || "{}"),
+      );
       const payload = {
         cita_ID: citaSeleccionada.cita_ID,
         paciente_ID:
@@ -171,6 +174,7 @@ export default function SignosVitalesPage() {
         enqueueSnackbar("✅ Triaje registrado correctamente", {
           variant: "success",
         });
+        imprimirTriaje(citaSeleccionada, signos); // ← solo esta línea se agrega
         setCitaSeleccionada(null);
         setSignos(signoVacio());
         handleBuscar();
@@ -224,6 +228,142 @@ export default function SignosVitalesPage() {
       />
     </Box>
   );
+
+  const imprimirTriaje = (cita, signosData) => {
+    const w = window.open("", "_blank", "width=680,height=900");
+    const ahora = new Date();
+    const fechaHora = ahora.toLocaleString("es-BO", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
+    const filas = [
+      ["Presión Sistólica", signosData.presionSistolica, "mmHg"],
+      ["Presión Diastólica", signosData.presionDiastolica, "mmHg"],
+      ["Frec. Cardíaca", signosData.frecuenciaCardiaca, "lpm"],
+      ["Frec. Respiratoria", signosData.frecuenciaRespiratoria, "rpm"],
+      ["Temperatura", signosData.temperatura, "°C"],
+      ["Saturación O₂", signosData.saturacionOxigeno, "%"],
+      ["Peso", signosData.peso, "kg"],
+      ["Talla", signosData.talla, "cm"],
+      ["Perímetro Cefálico", signosData.perimetroCefalico, "cm"],
+      ["Perímetro Abdominal", signosData.perimetroAbdominal, "cm"],
+      ["Glicemia", signosData.glicemia, "mg/dL"],
+    ]
+      .filter(([, val]) => Number(val) > 0)
+      .map(
+        ([label, val, unit]) => `
+      <tr>
+        <td style="padding:6px 10px;border:1px solid #ddd;font-size:12px;">${label}</td>
+        <td style="padding:6px 10px;border:1px solid #ddd;font-size:13px;font-weight:700;text-align:center;">${val}</td>
+        <td style="padding:6px 10px;border:1px solid #ddd;font-size:11px;color:#555;text-align:center;">${unit}</td>
+      </tr>`,
+      )
+      .join("");
+
+    w.document.write(`
+    <html>
+    <head>
+      <title>Hoja de Triaje</title>
+      <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family: Arial, sans-serif; font-size: 12px; padding: 24px; max-width: 620px; }
+        .header-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; border-bottom:3px solid #e65c00; padding-bottom:10px; }
+        .logo-area { display:flex; align-items:center; gap:10px; }
+        .logo-circle { width:56px; height:56px; border-radius:50%; background:linear-gradient(135deg,#e65c00,#003366); display:flex; align-items:center; justify-content:center; }
+        .logo-text { font-size:22px; font-weight:900; color:#e65c00; letter-spacing:1px; }
+        .srl { font-size:10px; color:#e65c00; font-weight:700; }
+        .doc-title { font-size:16px; font-weight:900; color:#333; text-transform:uppercase; }
+        .doc-sub { font-size:11px; color:#555; margin-top:2px; }
+        .info-block { margin:10px 0; font-size:11px; line-height:1.9; }
+        .info-block span { font-weight:700; }
+        table { width:100%; border-collapse:collapse; margin:12px 0; }
+        th { background:#003366; color:white; padding:7px 10px; font-size:11px; text-align:left; text-transform:uppercase; }
+        .obs-box { margin-top:12px; padding:10px 12px; border:1px solid #ddd; border-left:3px solid #e65c00; border-radius:4px; font-size:11px; }
+        .obs-label { font-weight:700; color:#333; margin-bottom:4px; }
+        .divider { border-top:2px solid #333; margin:16px 0; }
+        .firma-section { display:flex; justify-content:space-between; align-items:flex-end; margin-top:50px; }
+        .firma-box { text-align:center; }
+        .firma-line { border-top:1px solid #333; width:150px; margin:0 auto 4px; }
+        @media print { button { display:none!important; } }
+      </style>
+    </head>
+    <body>
+
+      <div class="header-top">
+        <div class="logo-area">
+          <div class="logo-circle">
+            <span style="color:white;font-weight:900;font-size:13px;">DX</span>
+          </div>
+          <div>
+            <div style="font-size:8px;color:#003366;font-weight:700;text-transform:uppercase;letter-spacing:1px;">CENTRO MÉDICO CON INTERNACION TRANSITORIA</div>
+            <div class="logo-text">DINAMAX <span class="srl">S.R.L.</span></div>
+          </div>
+        </div>
+        <div style="text-align:right;">
+          <div class="doc-title">Hoja de Triaje</div>
+          <div class="doc-sub">Signos Vitales — Enfermería</div>
+          <div style="font-size:10px;color:#555;margin-top:2px;">Fecha: <strong>${fechaHora}</strong></div>
+        </div>
+      </div>
+
+      <div class="info-block">
+        <div><span>Paciente:</span> ${(cita.nombrePaciente || "").trim()}</div>
+        <div><span>Doc:</span> ${cita.numeroDocumento || "—"} &nbsp;&nbsp; <span>Médico:</span> ${cita.nombreMedico || "—"}</div>
+        <div><span>Especialidad:</span> ${cita.nombreEspecialidad || "—"} &nbsp;&nbsp; <span>Hora Cita:</span> ${cita.horaInicio || "—"}</div>
+      </div>
+
+      <div class="divider"></div>
+
+      <table>
+        <thead>
+          <tr>
+            <th style="width:50%;">Signo Vital</th>
+            <th style="width:30%;text-align:center;">Valor</th>
+            <th style="width:20%;text-align:center;">Unidad</th>
+          </tr>
+        </thead>
+        <tbody>${filas}</tbody>
+      </table>
+
+      ${
+        signosData.observaciones
+          ? `
+        <div class="obs-box">
+          <div class="obs-label">Observaciones de Enfermería:</div>
+          <div>${signosData.observaciones}</div>
+        </div>`
+          : ""
+      }
+
+      <div class="divider"></div>
+
+      <div class="firma-section">
+        <div class="firma-box">
+          <div class="firma-line"></div>
+          <p style="font-size:11px;font-weight:700;">Enfermería</p>
+          <p style="font-size:10px;color:#666;">Firma y Sello</p>
+        </div>
+        <div class="firma-box">
+          <div class="firma-line"></div>
+          <p style="font-size:11px;font-weight:700;">Médico Responsable</p>
+          <p style="font-size:10px;color:#666;">Recibido</p>
+        </div>
+      </div>
+
+      <br/>
+      <button onclick="window.print()" style="width:100%;padding:10px;background:#003366;color:white;border:none;border-radius:4px;cursor:pointer;font-size:13px;font-weight:bold;margin-top:8px;">
+        🖨️ Imprimir Hoja de Triaje
+      </button>
+    </body>
+    </html>`);
+    w.document.close();
+    w.focus();
+    setTimeout(() => w.print(), 300);
+  };
 
   return (
     <Box sx={{ maxWidth: 1100, mx: "auto" }}>

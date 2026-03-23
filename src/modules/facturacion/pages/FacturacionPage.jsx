@@ -110,7 +110,7 @@ export default function FacturacionPage() {
   const [tipoCliente, setTipoCliente] = useState("normal");
 
   // Formulario cliente
-  const [tipoDocumento, setTipoDocumento] = useState(5);
+  const [tipoDocumento, setTipoDocumento] = useState(1);
   const [nitCliente, setNitCliente] = useState("");
   const [complemento, setComplemento] = useState("");
   const [razonSocial, setRazonSocial] = useState("");
@@ -169,6 +169,15 @@ export default function FacturacionPage() {
             .catch(() => ({ formatoPdf: "normal" })),
         ]);
         setTiposDocumento(docs);
+        if (docs.length > 0) {
+          const ci = docs.find(
+            (t) =>
+              t.descripcion?.toUpperCase().includes("CEDULA") ||
+              t.descripcion?.toUpperCase().includes("CÉDULA") ||
+              t.descripcion?.toUpperCase().includes("CI"),
+          );
+          if (ci) setTipoDocumento(ci.codigoClasificador);
+        }
         setMetodosPago(
           pagos.filter((m) =>
             METODOS_PAGO_PERMITIDOS.includes(m.codigoClasificador),
@@ -1070,10 +1079,10 @@ export default function FacturacionPage() {
                 <Search sx={{ fontSize: 16, color: "#6b7280" }} /> Datos del
                 Cliente
               </Typography>
-              <Grid container spacing={2}>
-                <Grid item xs={12} sm={9}>
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+                {/* FILA 1: NIT/CI + Comp. + Razón Social */}
+                <Box sx={{ display: "flex", gap: 1.5 }}>
                   <TextField
-                    fullWidth
                     size="small"
                     label="NIT/CI *"
                     value={nitCliente}
@@ -1081,24 +1090,20 @@ export default function FacturacionPage() {
                       setNitCliente(e.target.value.toUpperCase())
                     }
                     placeholder="Ej: 123456789"
+                    sx={{ flex: 2 }}
                   />
-                </Grid>
-                <Grid item xs={12} sm={3}>
                   <TextField
-                    fullWidth
                     size="small"
-                    label="Complemento"
+                    label="Comp."
                     value={complemento}
                     onChange={(e) =>
                       setComplemento(e.target.value.toUpperCase())
                     }
-                    placeholder="Ej: 1A"
-                    inputProps={{ maxLength: 10 }}
+                    placeholder="1A"
+                    inputProps={{ maxLength: 5 }}
+                    sx={{ width: 70 }}
                   />
-                </Grid>
-                <Grid item xs={12}>
                   <TextField
-                    fullWidth
                     size="small"
                     label="Razón Social / Nombre *"
                     value={razonSocial}
@@ -1106,17 +1111,20 @@ export default function FacturacionPage() {
                       setRazonSocial(e.target.value.toUpperCase())
                     }
                     required
+                    sx={{ flex: 3 }}
                   />
-                </Grid>
-                <Grid item xs={12} sm={6}>
+                </Box>
+
+                {/* FILA 2: Tipo Documento + Email */}
+                <Box sx={{ display: "flex", gap: 1.5 }}>
                   <TextField
                     select
-                    fullWidth
                     size="small"
                     label="Tipo Documento"
                     value={tipoDocumento}
                     onChange={(e) => setTipoDocumento(Number(e.target.value))}
                     disabled={catalogosLoading}
+                    sx={{ flex: 1 }}
                   >
                     {tiposDocumento.map((t) => (
                       <MenuItem
@@ -1127,34 +1135,32 @@ export default function FacturacionPage() {
                       </MenuItem>
                     ))}
                     {tiposDocumento.length === 0 && (
-                      <MenuItem value={5}>CI - CÉDULA DE IDENTIDAD</MenuItem>
+                      <MenuItem value={1}>CI - CÉDULA DE IDENTIDAD</MenuItem>
                     )}
                   </TextField>
-                </Grid>
-                <Grid item xs={12} sm={6}>
                   <TextField
-                    fullWidth
                     size="small"
                     label="Email"
                     value={emailCliente}
                     type="email"
                     onChange={(e) => setEmailCliente(e.target.value)}
                     placeholder="cliente@ejemplo.com"
+                    sx={{ flex: 1 }}
                   />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    size="small"
-                    label="Dirección"
-                    value={direccionCliente}
-                    onChange={(e) =>
-                      setDireccionCliente(e.target.value.toUpperCase())
-                    }
-                    placeholder="Dirección completa"
-                  />
-                </Grid>
-              </Grid>
+                </Box>
+
+                {/* FILA 3: Dirección completa */}
+                <TextField
+                  fullWidth
+                  size="small"
+                  label="Dirección"
+                  value={direccionCliente}
+                  onChange={(e) =>
+                    setDireccionCliente(e.target.value.toUpperCase())
+                  }
+                  placeholder="Dirección completa"
+                />
+              </Box>
             </CardContent>
           </Card>
 
@@ -1727,14 +1733,21 @@ export default function FacturacionPage() {
                                   type="number"
                                   min={0}
                                   step={0.01}
-                                  value={d.precioUnitario}                                 
+                                  value={d.precioUnitario}
+                                  onChange={(e) =>
+                                    actualizarDetalle(
+                                      d._id,
+                                      "precioUnitario",
+                                      e.target.value,
+                                    )
+                                  }
                                   style={{
                                     width: 70,
                                     textAlign: "right",
                                     border: "1px solid #e5e7eb",
                                     borderRadius: 4,
                                     padding: "3px 6px",
-                                    fontSize: 13,                                    
+                                    fontSize: 13,
                                   }}
                                 />
                               </td>

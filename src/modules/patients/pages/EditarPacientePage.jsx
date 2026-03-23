@@ -17,7 +17,7 @@ import {
   CircularProgress,
   Chip,
 } from "@mui/material";
-import { ArrowBack, Save, MedicalInformation } from "@mui/icons-material";
+import { ArrowBack, Save, MedicalInformation, Print  } from "@mui/icons-material";
 import { useSnackbar } from "notistack";
 import pacienteService, {
   TIPOS_DOCUMENTO,
@@ -84,7 +84,8 @@ export default function EditarPacientePage() {
 
     setForm({
       paciente_ID: pacienteOriginal.paciente_ID || "",
-      tipoDocumentoIdentidad: Number(pacienteOriginal.tipoDocumentoIdentidad) || 1,
+      tipoDocumentoIdentidad:
+        Number(pacienteOriginal.tipoDocumentoIdentidad) || 1,
       numeroDocumento: pacienteOriginal.numeroDocumento || "",
       nombrePaciente: esSinDatos ? "" : partes[0] || "",
       apellidosPaciente: esSinDatos ? "" : partes.slice(1).join(" "),
@@ -110,6 +111,12 @@ export default function EditarPacientePage() {
       return "El número de documento es obligatorio";
     if (!form.nombrePaciente.trim())
       return "El nombre del paciente es obligatorio";
+    if (!form.fechaNacimiento) return "La fecha de nacimiento es obligatoria";
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    const fechaNac = new Date(form.fechaNacimiento + "T00:00:00");
+    if (fechaNac >= hoy)
+      return "La fecha de nacimiento no puede ser hoy ni una fecha futura";
     return null;
   };
 
@@ -185,6 +192,201 @@ export default function EditarPacientePage() {
     fontSize: "0.95rem",
     color: "#111827",
     mb: 2,
+  };
+
+  const imprimirHistorialClinico = () => {
+    const w = window.open("", "_blank", "width=800,height=900");
+    const ahora = new Date().toLocaleDateString("es-BO", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+
+    w.document.write(`
+    <html>
+    <head>
+      <title>Historia Clínica</title>
+      <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family: Arial, sans-serif; font-size: 12px; padding: 24px; max-width: 720px; }
+        .header-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; border-bottom:3px solid #e65c00; padding-bottom:10px; }
+        .logo-area { display:flex; align-items:center; gap:10px; }
+        .logo-circle { width:56px; height:56px; border-radius:50%; background:linear-gradient(135deg,#e65c00,#003366); display:flex; align-items:center; justify-content:center; }
+        .logo-text { font-size:22px; font-weight:900; color:#e65c00; letter-spacing:1px; }
+        .srl { font-size:10px; color:#e65c00; font-weight:700; }
+        .doc-title { font-size:16px; font-weight:900; color:#333; text-transform:uppercase; }
+        .doc-sub { font-size:11px; color:#555; margin-top:2px; }
+        .info-block { margin:10px 0 6px; font-size:11px; line-height:1.9; }
+        .info-block span { font-weight:700; }
+        .section-title { font-size:11px; font-weight:700; text-transform:uppercase; background:#f0f0f0; padding:4px 8px; border-left:3px solid #e65c00; margin:14px 0 8px; }
+        .field-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px 20px; margin-bottom:6px; }
+        .field { font-size:11px; }
+        .field label { font-weight:700; color:#555; display:block; font-size:10px; margin-bottom:2px; }
+        .field p { border-bottom:1px solid #ddd; padding-bottom:3px; min-height:18px; }
+        .field.full { grid-column: span 2; }
+        .field-blank { min-height: 40px; border-bottom:1px solid #ddd; margin-bottom:8px; }
+        .divider { border-top:2px solid #333; margin:16px 0; }
+        .firma-section { display:flex; justify-content:space-between; align-items:flex-end; margin-top:60px; }
+        .firma-box { text-align:center; }
+        .firma-line { border-top:1px solid #333; width:160px; margin:0 auto 4px; }
+        @media print { button { display:none!important; } }
+      </style>
+    </head>
+    <body>
+
+      <!-- HEADER -->
+      <div class="header-top">
+        <div class="logo-area">
+          <div class="logo-circle">
+            <span style="color:white;font-weight:900;font-size:13px;">DX</span>
+          </div>
+          <div>
+            <div style="font-size:8px;color:#003366;font-weight:700;text-transform:uppercase;letter-spacing:1px;">CENTRO MÉDICO CON INTERNACION TRANSITORIA</div>
+            <div class="logo-text">DINAMAX <span class="srl">S.R.L.</span></div>
+          </div>
+        </div>
+        <div style="text-align:right;">
+          <div class="doc-title">Historia Clínica</div>
+          <div class="doc-sub">Registro Inicial del Paciente</div>
+          <div style="font-size:10px;color:#555;margin-top:2px;">HC: <strong>${pacienteOriginal?.numeroHistoriaClinica || "—"}</strong></div>
+        </div>
+      </div>
+
+      <!-- DATOS PACIENTE -->
+      <div class="info-block">
+        <div><span>Fecha de Registro:</span> ${ahora}</div>
+        <div><span>N° Historia Clínica:</span> ${pacienteOriginal?.numeroHistoriaClinica || "—"}</div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- IDENTIFICACIÓN -->
+      <div class="section-title">Identificación del Paciente</div>
+      <div class="field-grid">
+        <div class="field">
+          <label>Nombres</label>
+          <p>${form.nombrePaciente || "—"}</p>
+        </div>
+        <div class="field">
+          <label>Apellidos</label>
+          <p>${form.apellidosPaciente || "—"}</p>
+        </div>
+        <div class="field">
+          <label>Tipo de Documento</label>
+          <p>${TIPOS_DOCUMENTO.find((t) => t.id === form.tipoDocumentoIdentidad)?.descripcion || "—"}</p>
+        </div>
+        <div class="field">
+          <label>Número de Documento</label>
+          <p>${form.numeroDocumento || "—"}</p>
+        </div>
+        <div class="field">
+          <label>Fecha de Nacimiento</label>
+          <p>${form.fechaNacimiento || "—"}</p>
+        </div>
+        <div class="field">
+          <label>Género</label>
+          <p>${form.genero === "M" ? "Masculino" : form.genero === "F" ? "Femenino" : "—"}</p>
+        </div>
+        <div class="field">
+          <label>Teléfono Fijo</label>
+          <p>${form.telefono || "—"}</p>
+        </div>
+        <div class="field">
+          <label>Celular</label>
+          <p>${form.telefonoCelular || "—"}</p>
+        </div>
+        <div class="field full">
+          <label>Correo Electrónico</label>
+          <p>${form.correoElectronico || "—"}</p>
+        </div>
+      </div>
+
+      <!-- UBICACIÓN -->
+      <div class="section-title">Ubicación</div>
+      <div class="field-grid">
+        <div class="field">
+          <label>País</label>
+          <p>${form.pais || "—"}</p>
+        </div>
+        <div class="field">
+          <label>Nacionalidad</label>
+          <p>${form.nacionalidad || "—"}</p>
+        </div>
+        <div class="field">
+          <label>Departamento</label>
+          <p>${form.departamento || "—"}</p>
+        </div>
+        <div class="field">
+          <label>Ciudad</label>
+          <p>${form.ciudad || "—"}</p>
+        </div>
+        <div class="field full">
+          <label>Dirección Completa</label>
+          <p>${form.direccionCompleta || "—"}</p>
+        </div>
+      </div>
+
+      <!-- MOTIVO DE CONSULTA (en blanco para que el médico llene) -->
+      <div class="section-title">Motivo de Consulta</div>
+      <div class="field-blank"></div>
+
+      <!-- ANTECEDENTES -->
+      <div class="section-title">Antecedentes</div>
+      <div class="field-grid">
+        <div class="field full">
+          <label>Antecedentes Personales Patológicos</label>
+          <div class="field-blank"></div>
+        </div>
+        <div class="field full">
+          <label>Antecedentes Familiares</label>
+          <div class="field-blank"></div>
+        </div>
+        <div class="field full">
+          <label>Alergias / Medicamentos</label>
+          <div class="field-blank"></div>
+        </div>
+      </div>
+
+      <!-- EXAMEN FÍSICO -->
+      <div class="section-title">Examen Físico Inicial</div>
+      <div class="field-grid">
+        <div class="field"><label>Presión Arterial</label><div class="field-blank"></div></div>
+        <div class="field"><label>Frecuencia Cardíaca</label><div class="field-blank"></div></div>
+        <div class="field"><label>Temperatura</label><div class="field-blank"></div></div>
+        <div class="field"><label>Saturación O₂</label><div class="field-blank"></div></div>
+        <div class="field"><label>Peso</label><div class="field-blank"></div></div>
+        <div class="field"><label>Talla</label><div class="field-blank"></div></div>
+      </div>
+
+      <!-- OBSERVACIONES -->
+      <div class="section-title">Observaciones Iniciales</div>
+      <div class="field-blank" style="min-height:60px;"></div>
+
+      <div class="divider"></div>
+
+      <!-- FIRMA -->
+      <div class="firma-section">
+        <div class="firma-box">
+          <div class="firma-line"></div>
+          <p style="font-size:11px;font-weight:700;">Médico Responsable</p>
+          <p style="font-size:10px;color:#666;">Firma y Sello</p>
+        </div>
+        <div class="firma-box">
+          <div class="firma-line"></div>
+          <p style="font-size:11px;">Firma del Paciente</p>
+          <p style="font-size:10px;color:#666;">${form.nombrePaciente} ${form.apellidosPaciente}</p>
+        </div>
+      </div>
+
+      <br/>
+      <button onclick="window.print()" style="width:100%;padding:10px;background:#003366;color:white;border:none;border-radius:4px;cursor:pointer;font-size:13px;font-weight:bold;margin-top:8px;">
+        🖨️ Imprimir Historia Clínica
+      </button>
+    </body>
+    </html>`);
+    w.document.close();
+    w.focus();
+    setTimeout(() => w.print(), 300);
   };
 
   return (
@@ -325,13 +527,14 @@ export default function EditarPacientePage() {
               <TextField
                 fullWidth
                 size="small"
-                label="Fecha de Nacimiento"
+                label="Fecha de Nacimiento *"
                 type="date"
                 value={form.fechaNacimiento}
                 onChange={(e) =>
                   handleChange("fechaNacimiento", e.target.value)
                 }
                 InputLabelProps={{ shrink: true }}
+                inputProps={{ max: new Date().toISOString().split("T")[0] }}
               />
             </Grid>
 
@@ -475,6 +678,22 @@ export default function EditarPacientePage() {
           }}
         >
           Cancelar
+        </Button>        
+        <Button
+          variant="outlined"
+          startIcon={<Print />}
+          onClick={imprimirHistorialClinico}
+          disabled={guardando}
+          sx={{
+            borderRadius: 1.5,
+            fontWeight: 600,
+            textTransform: "none",
+            borderColor: "#374151",
+            color: "#374151",
+            "&:hover": { borderColor: "#111827", bgcolor: "#f9fafb" },
+          }}
+        >
+          Imprimir HC
         </Button>
         <Button
           variant="contained"
