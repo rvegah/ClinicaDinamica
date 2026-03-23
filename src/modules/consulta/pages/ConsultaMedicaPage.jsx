@@ -24,7 +24,7 @@ import {
   FormControlLabel,
   Checkbox,
   Tab,
-  Tabs,
+  Tabs,  
 } from "@mui/material";
 import {
   Search,
@@ -40,6 +40,7 @@ import {
   Medication,
   Assignment,
   PlayArrow,
+  MonitorHeart,
 } from "@mui/icons-material";
 import { useSnackbar } from "notistack";
 import atencionMedicaService from "../../../services/api/atencionMedicaService";
@@ -473,6 +474,27 @@ function FormularioConsulta({ cita, consultaMedica, onFinalizar }) {
     });
   }, []);
 
+  const [triaje, setTriaje] = useState(null);
+  const [triajeCargando, setTriajeCargando] = useState(false);
+
+  const cargarTriaje = async () => {
+    setTriajeCargando(true);
+    try {
+      const res = await atencionMedicaService.obtenerTriaje({
+        citaId: cita.cita_ID,
+        pacienteId: cita.paciente_ID,
+      });
+      if (res.exitoso) setTriaje(res.datos);
+    } catch {
+    } finally {
+      setTriajeCargando(false);
+    }
+  };
+
+  useEffect(() => {
+    cargarTriaje();
+  }, []);
+
   // ─── Buscar medicamentos (debounce 400ms) ────────────────────────────────
   useEffect(() => {
     if (!busqMed || busqMed.length < 3) {
@@ -804,6 +826,188 @@ function FormularioConsulta({ cita, consultaMedica, onFinalizar }) {
         </CardContent>
       </Card>
 
+      {/* PANEL TRIAJE */}
+      <Card
+        sx={{
+          ...card,
+          mb: 2,
+          border: "1.5px solid #d1fae5",
+          bgcolor: "#f0fdf4",
+        }}
+      >
+        <CardContent sx={{ p: 2 }}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              mb: triaje ? 1.5 : 0,
+            }}
+          >
+            <Typography
+              variant="body2"
+              fontWeight={700}
+              color="#065f46"
+              sx={{ display: "flex", alignItems: "center", gap: 0.75 }}
+            >
+              <MonitorHeart sx={{ fontSize: 16 }} />
+              Signos Vitales — Triaje de Enfermería
+            </Typography>
+            <Button
+              size="small"
+              variant="outlined"
+              onClick={cargarTriaje}
+              disabled={triajeCargando}
+              startIcon={
+                triajeCargando ? (
+                  <CircularProgress size={12} color="inherit" />
+                ) : null
+              }
+              sx={{
+                borderRadius: 1.5,
+                textTransform: "none",
+                fontSize: 11,
+                borderColor: "#6ee7b7",
+                color: "#065f46",
+                fontWeight: 600,
+                "&:hover": { bgcolor: "#d1fae5", borderColor: "#34d399" },
+              }}
+            >
+              {triajeCargando ? "Cargando..." : "↻ Actualizar"}
+            </Button>
+          </Box>
+
+          {triaje ? (
+            <>
+              <Typography
+                variant="caption"
+                color="#6b7280"
+                sx={{ display: "block", mb: 1 }}
+              >
+                Enfermera: <strong>{triaje.enfermera}</strong> · {triaje.fecha}
+              </Typography>
+              <Box
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))",
+                  gap: 1,
+                }}
+              >
+                {[
+                  {
+                    label: "Presión Arterial",
+                    value:
+                      triaje.presionArterialSistolica &&
+                      triaje.presionArterialDiastolica
+                        ? `${triaje.presionArterialSistolica}/${triaje.presionArterialDiastolica}`
+                        : null,
+                    unit: "mmHg",
+                  },
+                  {
+                    label: "Frec. Cardíaca",
+                    value: triaje.frecuenciaCardiaca,
+                    unit: "lpm",
+                  },
+                  {
+                    label: "Frec. Respiratoria",
+                    value: triaje.frecuenciaRespiratoria,
+                    unit: "rpm",
+                  },
+                  {
+                    label: "Temperatura",
+                    value: triaje.temperatura,
+                    unit: "°C",
+                  },
+                  {
+                    label: "Saturación O₂",
+                    value: triaje.saturacionOxigeno,
+                    unit: "%",
+                  },
+                  { label: "Peso", value: triaje.peso, unit: "kg" },
+                  { label: "Talla", value: triaje.talla, unit: "cm" },
+                  { label: "IMC", value: triaje.imc, unit: "" },
+                  {
+                    label: "Perm. Cefálico",
+                    value: triaje.perimetroCefalico,
+                    unit: "cm",
+                  },
+                  {
+                    label: "Perm. Abdominal",
+                    value: triaje.perimetroAbdominal,
+                    unit: "cm",
+                  },
+                  { label: "Glicemia", value: triaje.glicemia, unit: "mg/dL" },
+                ]
+                  .filter((s) => s.value && Number(s.value) > 0)
+                  .map(({ label, value, unit }) => (
+                    <Box
+                      key={label}
+                      sx={{
+                        p: 1,
+                        bgcolor: "white",
+                        borderRadius: 1.5,
+                        border: "1px solid #a7f3d0",
+                        textAlign: "center",
+                      }}
+                    >
+                      <Typography
+                        variant="caption"
+                        color="#6b7280"
+                        sx={{ display: "block", fontSize: 10 }}
+                      >
+                        {label}
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        fontWeight={800}
+                        color="#065f46"
+                      >
+                        {value}{" "}
+                        <span style={{ fontSize: 10, fontWeight: 400 }}>
+                          {unit}
+                        </span>
+                      </Typography>
+                    </Box>
+                  ))}
+              </Box>
+              {triaje.observaciones && (
+                <Box
+                  sx={{
+                    mt: 1,
+                    px: 1.5,
+                    py: 1,
+                    bgcolor: "white",
+                    borderRadius: 1,
+                    border: "1px solid #a7f3d0",
+                  }}
+                >
+                  <Typography variant="caption" color="#6b7280">
+                    Obs:{" "}
+                  </Typography>
+                  <Typography
+                    variant="caption"
+                    color="#065f46"
+                    fontWeight={600}
+                  >
+                    {triaje.observaciones}
+                  </Typography>
+                </Box>
+              )}
+            </>
+          ) : (
+            <Typography
+              variant="caption"
+              color="#6b7280"
+              sx={{ fontStyle: "italic" }}
+            >
+              {triajeCargando
+                ? "Cargando triaje..."
+                : "Sin datos de triaje registrados"}
+            </Typography>
+          )}
+        </CardContent>
+      </Card>
+
       {/* TABS */}
       <Card sx={card}>
         <Box sx={{ borderBottom: "1px solid #e5e7eb" }}>
@@ -1112,16 +1316,29 @@ function FormularioConsulta({ cita, consultaMedica, onFinalizar }) {
                         </Typography>
                       )}
                     </Box>
-                    <Chip
-                      label={d.tipoDiagnostico}
-                      size="small"
-                      sx={{
-                        bgcolor: "#eff6ff",
-                        color: "#2563eb",
-                        fontWeight: 600,
-                        fontSize: 10,
-                      }}
-                    />
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <Chip
+                        label={d.tipoDiagnostico}
+                        size="small"
+                        sx={{
+                          bgcolor: "#eff6ff",
+                          color: "#2563eb",
+                          fontWeight: 600,
+                          fontSize: 10,
+                        }}
+                      />
+                      <IconButton
+                        size="small"
+                        onClick={() =>
+                          setDiagnosticos((p) =>
+                            p.filter((_, idx) => idx !== i),
+                          )
+                        }
+                        sx={{ color: "#ef4444" }}
+                      >
+                        <Delete sx={{ fontSize: 15 }} />
+                      </IconButton>
+                    </Box>
                   </Box>
                 ))}
               </Box>
@@ -1209,6 +1426,17 @@ function FormularioConsulta({ cita, consultaMedica, onFinalizar }) {
                         </Typography>
                       )}
                     </Box>
+                    <IconButton
+                      size="small"
+                      onClick={() =>
+                        setProcedimientos((prev) =>
+                          prev.filter((_, idx) => idx !== i),
+                        )
+                      }
+                      sx={{ color: "#ef4444" }}
+                    >
+                      <Delete sx={{ fontSize: 15 }} />
+                    </IconButton>
                   </Box>
                 ))}
               </Box>
@@ -1332,16 +1560,29 @@ function FormularioConsulta({ cita, consultaMedica, onFinalizar }) {
                         </Typography>
                       )}
                     </Box>
-                    <Chip
-                      label={o.nombreTipo}
-                      size="small"
-                      sx={{
-                        bgcolor: "#dbeafe",
-                        color: "#1d4ed8",
-                        fontWeight: 600,
-                        fontSize: 10,
-                      }}
-                    />
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <Chip
+                        label={o.nombreTipo}
+                        size="small"
+                        sx={{
+                          bgcolor: "#dbeafe",
+                          color: "#1d4ed8",
+                          fontWeight: 600,
+                          fontSize: 10,
+                        }}
+                      />
+                      <IconButton
+                        size="small"
+                        onClick={() =>
+                          setOrdenes((prev) =>
+                            prev.filter((_, idx) => idx !== i),
+                          )
+                        }
+                        sx={{ color: "#ef4444" }}
+                      >
+                        <Delete sx={{ fontSize: 15 }} />
+                      </IconButton>
+                    </Box>
                   </Box>
                 ))}
               </Box>
@@ -1635,16 +1876,29 @@ function FormularioConsulta({ cita, consultaMedica, onFinalizar }) {
                         {rx.cantidad}
                       </Typography>
                     </Box>
-                    <Chip
-                      label={rx.viaAdministracion}
-                      size="small"
-                      sx={{
-                        bgcolor: "#ede9fe",
-                        color: "#6d28d9",
-                        fontWeight: 600,
-                        fontSize: 10,
-                      }}
-                    />
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <Chip
+                        label={rx.viaAdministracion}
+                        size="small"
+                        sx={{
+                          bgcolor: "#ede9fe",
+                          color: "#6d28d9",
+                          fontWeight: 600,
+                          fontSize: 10,
+                        }}
+                      />
+                      <IconButton
+                        size="small"
+                        onClick={() =>
+                          setPrescripciones((prev) =>
+                            prev.filter((_, idx) => idx !== i),
+                          )
+                        }
+                        sx={{ color: "#ef4444" }}
+                      >
+                        <Delete sx={{ fontSize: 15 }} />
+                      </IconButton>
+                    </Box>
                   </Box>
                 ))}
               </Box>

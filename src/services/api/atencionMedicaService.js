@@ -26,8 +26,6 @@ const atencionMedicaService = {
     return res.data;
   },
 
-
-
   // ─── CONSULTA MÉDICA ──────────────────────────────────────────────────────
 
   buscarCitasParaConsulta: async (params = {}) => {
@@ -116,7 +114,7 @@ const atencionMedicaService = {
   },
 
   getPersonalMedico: async (codigoEmpleado) => {
-    const res = await clinicaApiClient.get('/AtencionMedica/PersonalMedico', {
+    const res = await clinicaApiClient.get("/AtencionMedica/PersonalMedico", {
       params: { CodigoEmpleado: codigoEmpleado },
     });
     return res.data;
@@ -129,6 +127,32 @@ const atencionMedicaService = {
     );
     return res.data;
   },
+
+  obtenerTriaje: async ({ citaId, pacienteId }) => {
+    const res = await clinicaApiClient.get("/AtencionMedica/ObtenerTriaje", {
+      params: { Cita_ID: citaId, Paciente_ID: pacienteId },
+    });
+    return res.data;
+  },
+
+  notificacionesEnfermeria: async () => {
+  const res = await clinicaApiClient.get('/AtencionEnfermeria/NotificacionesEnfermeria');
+  return res.data;
+},
+
+atencionMedico: async ({ medicoId, fecha }) => {
+  const res = await clinicaApiClient.get('/AtencionMedica/AtencionMedico', {
+    params: { Medico_ID: medicoId, FechaAtencion: fecha },
+  });
+  return res.data;
+},
+
+atencionEnfermera: async ({ enfermeraId, fecha }) => {
+  const res = await clinicaApiClient.get('/AtencionMedica/AtencionEnfermera', {
+    params: { Enfermera_ID: enfermeraId, FechaServicio: fecha },
+  });
+  return res.data;
+},
 };
 
 export default atencionMedicaService;

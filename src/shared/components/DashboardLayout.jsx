@@ -1,6 +1,6 @@
 // src/shared/components/DashboardLayout.jsx - VERSIÓN MEJORADA DINAMAX
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   Box,
@@ -38,6 +38,7 @@ import { clinicColors } from "../../app/theme";
 import { getFilteredMenuItems } from "../../config/menuBuilder";
 import React from "react";
 import { useAuth } from "../../context/AuthContext";
+import atencionMedicaService from "../../services/api/atencionMedicaService";
 
 const drawerWidth = 280;
 const drawerWidthClosed = 70;
@@ -51,6 +52,11 @@ const DashboardLayout = ({ children, currentUser }) => {
   const [open, setOpen] = useState(true);
   const [anchorEl, setAnchorEl] = useState(null);
   const [openSubmenu, setOpenSubmenu] = useState({});
+
+  const [notificaciones, setNotificaciones] = useState([]);
+  const [notifAnchorEl, setNotifAnchorEl] = useState(null);
+
+  const esRecepcion = currentUser?.rol === "Admicionista";
 
   const menuItems = useMemo(() => {
     if (!currentUser || !currentUser.apiPermissions) {
@@ -103,6 +109,19 @@ const DashboardLayout = ({ children, currentUser }) => {
   const isActive = (path) => {
     return location.pathname === path;
   };
+  
+  useEffect(() => {
+    if (!esRecepcion) return;
+    const fetchNotifs = async () => {
+      try {
+        const data = await atencionMedicaService.notificacionesEnfermeria();
+        if (data.exitoso) setNotificaciones(data.datos || []);
+      } catch {}
+    };
+    fetchNotifs();
+    const interval = setInterval(fetchNotifs, 30000);
+    return () => clearInterval(interval);
+  }, [esRecepcion]);
 
   return (
     <Box sx={{ display: "flex", height: "100vh", overflow: "hidden" }}>
@@ -190,22 +209,166 @@ const DashboardLayout = ({ children, currentUser }) => {
               }}
             />
 
-            <Tooltip title="Notificaciones" arrow>
-              <IconButton
-                color="inherit"
-                sx={{
-                  transition: "all 0.3s ease",
-                  "&:hover": {
-                    bgcolor: "rgba(255,255,255,0.15)",
-                    transform: "scale(1.1)",
-                  },
-                }}
-              >
-                <Badge badgeContent={3} color="error">
-                  <Notifications />
-                </Badge>
-              </IconButton>
-            </Tooltip>
+            {esRecepcion ? (
+              <>
+                <Tooltip title="Notificaciones de Enfermería" arrow>
+                  <IconButton
+                    color="inherit"
+                    onClick={(e) => setNotifAnchorEl(e.currentTarget)}
+                    sx={{
+                      transition: "all 0.3s ease",
+                      "&:hover": {
+                        bgcolor: "rgba(255,255,255,0.15)",
+                        transform: "scale(1.1)",
+                      },
+                    }}
+                  >
+                    <Badge badgeContent={notificaciones.length} color="error">
+                      <Notifications />
+                    </Badge>
+                  </IconButton>
+                </Tooltip>
+
+                <Menu
+                  anchorEl={notifAnchorEl}
+                  open={Boolean(notifAnchorEl)}
+                  onClose={() => setNotifAnchorEl(null)}
+                  transformOrigin={{ horizontal: "right", vertical: "top" }}
+                  anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+                  PaperProps={{
+                    sx: {
+                      mt: 1.5,
+                      minWidth: 340,
+                      maxWidth: 380,
+                      borderRadius: 3,
+                      boxShadow: "0 8px 32px rgba(0,0,0,0.15)",
+                      overflow: "hidden",
+                    },
+                  }}
+                >
+                  {/* Header */}
+                  <Box
+                    sx={{
+                      px: 2.5,
+                      py: 1.5,
+                      background:
+                        "linear-gradient(135deg, #1E8449 0%, #27AE60 100%)",
+                    }}
+                  >
+                    <Typography
+                      variant="subtitle2"
+                      fontWeight={800}
+                      color="white"
+                    >
+                      Notificaciones de Enfermería
+                    </Typography>
+                    <Typography
+                      variant="caption"
+                      sx={{ color: "rgba(255,255,255,0.85)" }}
+                    >
+                      {notificaciones.length} notificación(es)
+                    </Typography>
+                  </Box>
+
+                  {notificaciones.length === 0 ? (
+                    <Box sx={{ px: 2.5, py: 3, textAlign: "center" }}>
+                      <Typography variant="body2" color="text.secondary">
+                        Sin notificaciones nuevas
+                      </Typography>
+                    </Box>
+                  ) : (
+                    notificaciones.map((n, idx) => (
+                      <Box key={idx}>
+                        <Box
+                          sx={{
+                            px: 2.5,
+                            py: 1.5,
+                            "&:hover": { bgcolor: "#f9fafb" },
+                          }}
+                        >
+                          <Box
+                            sx={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              alignItems: "flex-start",
+                              mb: 0.5,
+                            }}
+                          >
+                            <Typography
+                              variant="body2"
+                              fontWeight={700}
+                              color="#111827"
+                              sx={{ flex: 1, pr: 1 }}
+                            >
+                              {n.paciente}
+                            </Typography>
+                            {n.esReciente && (
+                              <Chip
+                                label="Nuevo"
+                                size="small"
+                                sx={{
+                                  bgcolor: "#dcfce7",
+                                  color: "#15803d",
+                                  fontWeight: 700,
+                                  fontSize: 10,
+                                  height: 18,
+                                }}
+                              />
+                            )}
+                          </Box>
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{ display: "block" }}
+                          >
+                            {n.motivo}
+                          </Typography>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              mt: 0.5,
+                            }}
+                          >
+                            <Typography
+                              variant="caption"
+                              sx={{ color: "#6b7280" }}
+                            >
+                              {n.fecha}
+                            </Typography>
+                            <Typography
+                              variant="caption"
+                              fontWeight={700}
+                              sx={{ color: "#1E8449" }}
+                            >
+                              {n.costoServicio}
+                            </Typography>
+                          </Box>
+                        </Box>
+                        {idx < notificaciones.length - 1 && <Divider />}
+                      </Box>
+                    ))
+                  )}
+                </Menu>
+              </>
+            ) : (
+              <Tooltip title="Notificaciones" arrow>
+                <IconButton
+                  color="inherit"
+                  sx={{
+                    transition: "all 0.3s ease",
+                    "&:hover": {
+                      bgcolor: "rgba(255,255,255,0.15)",
+                      transform: "scale(1.1)",
+                    },
+                  }}
+                >
+                  <Badge badgeContent={3} color="error">
+                    <Notifications />
+                  </Badge>
+                </IconButton>
+              </Tooltip>
+            )}
 
             <Tooltip title="Mi cuenta" arrow>
               <IconButton
