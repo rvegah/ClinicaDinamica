@@ -1,10 +1,10 @@
 // src/context/AuthContext.jsx - Context global de autenticación
 // SI CLINICA FARMA
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import authService from '../services/api/authService';
-import menuService from '../services/api/menuService';
-import atencionMedicaService from '../services/api/atencionMedicaService';
+import React, { createContext, useContext, useState, useEffect } from "react";
+import authService from "../services/api/authService";
+import menuService from "../services/api/menuService";
+import atencionMedicaService from "../services/api/atencionMedicaService";
 
 // Crear el contexto
 const AuthContext = createContext();
@@ -26,15 +26,15 @@ export const AuthProvider = ({ children }) => {
         if (savedUser) {
           setUser(savedUser);
           setIsAuthenticated(true);
-          
+
           if (savedPermissions) {
             setApiPermissions(savedPermissions);
           }
-          
-          console.log('✅ Sesión restaurada:', savedUser.usuario);
+
+          console.log("✅ Sesión restaurada:", savedUser.usuario);
         }
       } catch (error) {
-        console.error('❌ Error al restaurar sesión:', error);
+        console.error("❌ Error al restaurar sesión:", error);
       } finally {
         setIsLoading(false);
       }
@@ -64,32 +64,42 @@ export const AuthProvider = ({ children }) => {
       try {
         // 🔥 CAMBIO: Usar nombre de usuario directamente
         const nombreUsuario = loginResult.user.usuario;
-        
+
         if (nombreUsuario) {
-          console.log(`📡 Obteniendo permisos para usuario: ${nombreUsuario}...`);
+          console.log(
+            `📡 Obteniendo permisos para usuario: ${nombreUsuario}...`,
+          );
           userPermissions = await menuService.getPermisosByUser(nombreUsuario);
         } else {
-          console.warn('⚠️ Usuario no tiene nombre de usuario');
+          console.warn("⚠️ Usuario no tiene nombre de usuario");
         }
       } catch (permError) {
-        console.warn('⚠️ No se pudieron cargar permisos:', permError);
+        console.warn("⚠️ No se pudieron cargar permisos:", permError);
       }
 
       // 3. Guardar en sessionStorage
       authService.saveUser(loginResult.user);
       menuService.savePermissions(userPermissions);
 
-      // 3b. Obtener personalMedico_ID y enriquecer el user      
+      // 3b. Obtener personalMedico_ID y enriquecer el user
       try {
         const empleadoId = loginResult.user.empleado_ID;
-        if (empleadoId) {
-          const personalRes = await atencionMedicaService.getPersonalMedico(empleadoId);
+        const rol = loginResult.user.rol;
+
+        // SOLO PERSONAL DE SALUD
+        const rolesSalud = ["Medico", "Enfermera"];
+
+        if (empleadoId && rolesSalud.includes(rol)) {
+          const personalRes =
+            await atencionMedicaService.getPersonalMedico(empleadoId);
+
           if (personalRes.exitoso && personalRes.datos) {
-            loginResult.user.personalMedico_ID = personalRes.datos.personalMedico_ID;
+            loginResult.user.personalMedico_ID =
+              personalRes.datos.personalMedico_ID;
           }
         }
       } catch (personalErr) {
-        console.warn('⚠️ No se pudo obtener personalMedico_ID:', personalErr);
+        console.warn("⚠️ No se pudo obtener personalMedico_ID:", personalErr);
       }
       // Re-guardar user ya enriquecido con personalMedico_ID
       authService.saveUser(loginResult.user);
@@ -99,7 +109,7 @@ export const AuthProvider = ({ children }) => {
       setApiPermissions(userPermissions);
       setIsAuthenticated(true);
 
-      console.log('✅ Login completo:', {
+      console.log("✅ Login completo:", {
         usuario: loginResult.user.usuario,
         rol: loginResult.user.rol,
         permisos: userPermissions.length,
@@ -107,13 +117,13 @@ export const AuthProvider = ({ children }) => {
 
       return {
         success: true,
-        message: 'Inicio de sesión exitoso',
+        message: "Inicio de sesión exitoso",
       };
     } catch (error) {
-      console.error('❌ Error en login:', error);
+      console.error("❌ Error en login:", error);
       return {
         success: false,
-        message: error.message || 'Error al iniciar sesión',
+        message: error.message || "Error al iniciar sesión",
       };
     } finally {
       setIsLoading(false);
@@ -129,11 +139,11 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
     setApiPermissions([]);
     setIsAuthenticated(false);
-    sessionStorage.removeItem('wasAlreadyAuthenticated');
-    console.log('✅ Sesión cerrada');
-    
+    sessionStorage.removeItem("wasAlreadyAuthenticated");
+    console.log("✅ Sesión cerrada");
+
     // 🔥 CRÍTICO: Redirigir al login después de cerrar sesión
-    window.location.href = '/clinica-farma/';
+    window.location.href = "/clinica-farma/";
   };
 
   /**
@@ -153,13 +163,13 @@ export const AuthProvider = ({ children }) => {
 
     try {
       const updatedPermissions = await menuService.getPermisosByUser(
-        user.usuario
+        user.usuario,
       );
       menuService.savePermissions(updatedPermissions);
       setApiPermissions(updatedPermissions);
-      console.log('✅ Permisos actualizados');
+      console.log("✅ Permisos actualizados");
     } catch (error) {
-      console.error('❌ Error al actualizar permisos:', error);
+      console.error("❌ Error al actualizar permisos:", error);
     }
   };
 
@@ -182,11 +192,11 @@ export const AuthProvider = ({ children }) => {
 // Hook personalizado para usar el contexto
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  
+
   if (context === undefined) {
-    throw new Error('useAuth debe usarse dentro de un AuthProvider');
+    throw new Error("useAuth debe usarse dentro de un AuthProvider");
   }
-  
+
   return context;
 };
 

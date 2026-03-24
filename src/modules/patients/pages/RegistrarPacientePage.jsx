@@ -121,8 +121,9 @@ export default function RegistrarPacientePage() {
   };
 
   const validar = () => {
-    if (!form.numeroDocumento.trim())
-      return "El número de documento es obligatorio";
+    if (!/^\d+$/.test(form.numeroDocumento)) {
+      return "El número de documento debe ser numérico";
+    }
     if (tipoRegistro === "normal") {
       if (!form.nombrePaciente.trim())
         return "El nombre del paciente es obligatorio";
@@ -343,9 +344,17 @@ export default function RegistrarPacientePage() {
                 size="small"
                 label="Número de Documento *"
                 value={form.numeroDocumento}
-                onChange={(e) =>
-                  handleChange("numeroDocumento", e.target.value)
-                }
+                onChange={(e) => {
+                  const valor = e.target.value;
+
+                  if (/^\d*$/.test(valor)) {
+                    handleChange("numeroDocumento", valor);
+                  }
+                }}
+                inputProps={{
+                  inputMode: "numeric",
+                  pattern: "[0-9]*",
+                }}
                 placeholder="Ej: 12345678"
                 required
               />
