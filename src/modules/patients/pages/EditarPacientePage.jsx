@@ -23,6 +23,7 @@ import pacienteService, {
   TIPOS_DOCUMENTO,
   GENEROS,
 } from "../../../services/api/pacienteService";
+import { fechaHoy } from "../../../utils/fecha";
 
 export default function EditarPacientePage() {
   const navigate = useNavigate();
@@ -534,7 +535,7 @@ export default function EditarPacientePage() {
                   handleChange("fechaNacimiento", e.target.value)
                 }
                 InputLabelProps={{ shrink: true }}
-                inputProps={{ max: new Date().toISOString().split("T")[0] }}
+                inputProps={{ max: fechaHoy() }}
               />
             </Grid>
 

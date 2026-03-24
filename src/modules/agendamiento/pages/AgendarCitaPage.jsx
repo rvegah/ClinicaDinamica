@@ -37,6 +37,7 @@ import {
 import { useSnackbar } from "notistack";
 import agendamientoService from "../../../services/api/agendamientoService";
 import pacienteService from "../../../services/api/pacienteService";
+import { fechaHoy } from "../../../utils/fecha";
 
 // ─── HELPER: obtener empleado logueado ───────────────────────────────────────
 const getCodigoEmpleado = () => {
@@ -938,7 +939,7 @@ export default function AgendarCitaPage() {
                 value={fechaCita}
                 onChange={(e) => setFechaCita(e.target.value)}
                 InputLabelProps={{ shrink: true }}
-                inputProps={{ min: new Date().toISOString().split("T")[0] }}
+                inputProps={{ min: fechaHoy() }}
               />
             </Box>
             <Box sx={{ flex: 1 }}>

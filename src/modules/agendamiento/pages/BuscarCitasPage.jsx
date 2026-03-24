@@ -27,6 +27,7 @@ import {
 } from "@mui/icons-material";
 import { useSnackbar } from "notistack";
 import agendamientoService from "../../../services/api/agendamientoService";
+import { fechaHoy } from "../../../utils/fecha";
 
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
 const formatearFechaHora = (fechaStr) => {
@@ -308,12 +309,8 @@ export default function BuscarCitasPage() {
   // Filtros
   const [filtroMedico, setFiltroMedico] = useState("");
   const [filtroEspecialidad, setFiltroEspecialidad] = useState("");  
-  const [filtroFechaInicio, setFiltroFechaInicio] = useState(
-    new Date().toISOString().split("T")[0],
-  );
-  const [filtroFechaFin, setFiltroFechaFin] = useState(
-    new Date().toISOString().split("T")[0],
-  );
+  const [filtroFechaInicio, setFiltroFechaInicio] = useState(fechaHoy());
+  const [filtroFechaFin, setFiltroFechaFin] = useState(fechaHoy());
   // Resultados
   const [citas, setCitas] = useState([]);
   const [buscando, setBuscando] = useState(false);
