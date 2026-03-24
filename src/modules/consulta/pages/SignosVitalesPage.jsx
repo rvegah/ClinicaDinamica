@@ -290,12 +290,8 @@ export default function SignosVitalesPage() {
 
       <div class="header-top">
         <div class="logo-area">
-          <div class="logo-circle">
-            <span style="color:white;font-weight:900;font-size:13px;">DX</span>
-          </div>
-          <div>
-            <div style="font-size:8px;color:#003366;font-weight:700;text-transform:uppercase;letter-spacing:1px;">CENTRO MÉDICO CON INTERNACION TRANSITORIA</div>
-            <div class="logo-text">DINAMAX <span class="srl">S.R.L.</span></div>
+          <div class="logo-area">
+            <img src="/clinica-farma/CLINICA300.png" style="height:60px;" />
           </div>
         </div>
         <div style="text-align:right;">
