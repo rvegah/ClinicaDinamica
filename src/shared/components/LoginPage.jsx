@@ -153,7 +153,7 @@ function LoginPage() {
         password: contrasena,
         direccion_IP: localIP,
       });
-
+      console.log("test PR");
       if (loginResult.success) {
         setDialogConfig({
           title: "¡Bienvenido!",
