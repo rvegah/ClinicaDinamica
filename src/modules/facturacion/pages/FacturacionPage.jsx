@@ -53,6 +53,7 @@ import {
   configuracionService,
   imprimirFactura,
 } from "../../../services/api/facturacionServices";
+import { fechaHoy } from "../../../utils/fecha";
 
 // ─── CONSTANTES ──────────────────────────────────────────────────────────────
 const METODOS_PAGO_PERMITIDOS = [1, 27, 33, 35];
@@ -471,9 +472,8 @@ export default function FacturacionPage() {
   };
 
   const usarFechaActual = () => {
-    const now = new Date();
-    setFechaContingencia(now.toISOString().split("T")[0]);
-    setHoraContingencia(now.toTimeString().slice(0, 5));
+    setFechaContingencia(fechaHoy());
+    setHoraContingencia(new Date().toTimeString().slice(0, 5));
   };
 
   // ─── RENDER: FACTURA EXITOSA ──────────────────────────────────────────────

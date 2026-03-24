@@ -15,6 +15,7 @@ import { Search, Save, MonitorHeart, FilterList } from "@mui/icons-material";
 import { useSnackbar } from "notistack";
 import agendamientoService from "../../../services/api/agendamientoService";
 import atencionMedicaService from "../../../services/api/atencionMedicaService";
+import { fechaHoy } from "../../../utils/fecha";
 
 const getUsuario = () => {
   try {
@@ -72,9 +73,7 @@ export default function SignosVitalesPage() {
   const [especialidades, setEspecialidades] = useState([]);
   const [filtroMedico, setFiltroMedico] = useState("");
   const [filtroEspecialidad, setFiltroEspecialidad] = useState("");
-  const [filtroFecha, setFiltroFecha] = useState(
-    new Date().toISOString().split("T")[0],
-  );
+  const [filtroFecha, setFiltroFecha] = useState(fechaHoy());
 
   const [citas, setCitas] = useState([]);
   const [buscando, setBuscando] = useState(false);
@@ -84,12 +83,8 @@ export default function SignosVitalesPage() {
   const [signos, setSignos] = useState(signoVacio());
   const [guardando, setGuardando] = useState(false);
 
-  const [filtroFechaInicio, setFiltroFechaInicio] = useState(
-    new Date().toISOString().split("T")[0],
-  );
-  const [filtroFechaFin, setFiltroFechaFin] = useState(
-    new Date().toISOString().split("T")[0],
-  );
+  const [filtroFechaInicio, setFiltroFechaInicio] = useState(fechaHoy());
+  const [filtroFechaFin, setFiltroFechaFin] = useState(fechaHoy());
 
   useEffect(() => {
     Promise.all([

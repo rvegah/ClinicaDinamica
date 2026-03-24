@@ -34,6 +34,7 @@ import {
 import { useSnackbar } from "notistack";
 import enfermeriaService from "../../../services/api/enfermeriaService";
 import pacienteService from "../../../services/api/pacienteService";
+import { fechaHoy } from "../../../utils/fecha";
 
 // ─── HELPER ──────────────────────────────────────────────────────────────────
 const getUsuario = () => {
@@ -55,7 +56,7 @@ const getUsuario = () => {
   }
 };
 
-const hoy = () => new Date().toISOString().split("T")[0];
+const hoy = () => fechaHoy();
 const ahora = () => new Date().toISOString();
 
 // ─── ESTILOS COMPARTIDOS ─────────────────────────────────────────────────────

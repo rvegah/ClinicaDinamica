@@ -47,6 +47,7 @@ import atencionMedicaService from "../../services/api/atencionMedicaService";
 import clinicaApiClient from "../../services/api/clinicaApiClient";
 import agendamientoService from "../../services/api/agendamientoService";
 import enfermeriaService from "../../services/api/enfermeriaService";
+import { fechaHoy } from "../../utils/fecha";
 
 // ── Ícono según descripción ───────────────────────────────────────────────────
 const getIconForService = (descripcion) => {
@@ -415,8 +416,7 @@ function Dashboard() {
   const verTotales = esSuperAdmin || esAdmisionista;
   const [totales, setTotales] = useState(null);
 
-  const hoy = new Date().toISOString().split("T")[0];
-  const [fechaReporte, setFechaReporte] = useState(hoy);
+  const [fechaReporte, setFechaReporte] = useState(fechaHoy());
   const [medicoSeleccionadoReporte, setMedicoSeleccionadoReporte] =
     useState("");
   const [enfermeraSeleccionadaReporte, setEnfermeraSeleccionadaReporte] =

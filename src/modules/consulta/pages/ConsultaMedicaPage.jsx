@@ -24,7 +24,7 @@ import {
   FormControlLabel,
   Checkbox,
   Tab,
-  Tabs,  
+  Tabs,
 } from "@mui/material";
 import {
   Search,
@@ -44,6 +44,7 @@ import {
 } from "@mui/icons-material";
 import { useSnackbar } from "notistack";
 import atencionMedicaService from "../../../services/api/atencionMedicaService";
+import { fechaHoy } from "../../../utils/fecha";
 
 // ─── HELPER: usuario logueado ─────────────────────────────────────────────────
 const getUsuario = () => {
@@ -59,7 +60,7 @@ const getUsuario = () => {
   }
 };
 
-const hoy = () => new Date().toISOString().split("T")[0];
+const hoy = () => fechaHoy();
 const horaActual = () => new Date().toTimeString().slice(0, 5);
 
 // ─── CHIP ESTADO ──────────────────────────────────────────────────────────────
@@ -732,6 +733,7 @@ function FormularioConsulta({ cita, consultaMedica, onFinalizar }) {
           ordenes,
           prescripciones,
           medico: usuario.nombre,
+          triaje,
         });
       } else {
         enqueueSnackbar(res.mensaje || "Error al finalizar", {
@@ -895,12 +897,13 @@ function FormularioConsulta({ cita, consultaMedica, onFinalizar }) {
               >
                 {[
                   {
-                    label: "Presión Arterial",
-                    value:
-                      triaje.presionArterialSistolica &&
-                      triaje.presionArterialDiastolica
-                        ? `${triaje.presionArterialSistolica}/${triaje.presionArterialDiastolica}`
-                        : null,
+                    label: "Presión Sistólica",
+                    value: triaje.presionArterialSistolica,
+                    unit: "mmHg",
+                  },
+                  {
+                    label: "Presión Diastólica",
+                    value: triaje.presionArterialDiastolica,
                     unit: "mmHg",
                   },
                   {
@@ -938,7 +941,13 @@ function FormularioConsulta({ cita, consultaMedica, onFinalizar }) {
                   },
                   { label: "Glicemia", value: triaje.glicemia, unit: "mg/dL" },
                 ]
-                  .filter((s) => s.value && Number(s.value) > 0)
+                  .filter(
+                    (s) =>
+                      s.value !== null &&
+                      s.value !== undefined &&
+                      s.value !== "" &&
+                      Number(s.value) > 0,
+                  )
                   .map(({ label, value, unit }) => (
                     <Box
                       key={label}
@@ -1960,6 +1969,7 @@ function PantallaExito({ datos, onNueva }) {
     ordenes,
     prescripciones,
     medico,
+    triaje,
   } = datos;
 
   const imprimirConsulta = () => {
@@ -2014,12 +2024,8 @@ function PantallaExito({ datos, onNueva }) {
 
     <div class="header-top">
       <div class="logo-area">
-        <div class="logo-circle">
-          <span style="color:white;font-weight:900;font-size:13px;">DX</span>
-        </div>
-        <div>
-          <div style="font-size:8px;color:#003366;font-weight:700;text-transform:uppercase;letter-spacing:1px;">CENTRO MÉDICO CON INTERNACION TRANSITORIA</div>
-          <div class="logo-text">DINAMAX <span class="srl">S.R.L.</span></div>
+        <div class="logo-area">
+          <img src="/clinica-farma/CLINICA300.png" style="height:60px;" />
         </div>
       </div>
       <div style="text-align:right;">
@@ -2036,6 +2042,36 @@ function PantallaExito({ datos, onNueva }) {
     </div>
 
     <div class="divider"></div>
+
+    ${
+      triaje
+        ? `
+        <div class="section-title">Signos Vitales</div>
+        <table>
+          <thead>
+            <tr>
+              <th>Signo</th>
+              <th>Valor</th>
+              <th>Unidad</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Presión Sistólica</td><td>${triaje.presionArterialSistolica || "—"}</td><td>mmHg</td></tr>
+            <tr><td>Presión Diastólica</td><td>${triaje.presionArterialDiastolica || "—"}</td><td>mmHg</td></tr>
+            <tr><td>Frec. Cardíaca</td><td>${triaje.frecuenciaCardiaca || "—"}</td><td>lpm</td></tr>
+            <tr><td>Frec. Respiratoria</td><td>${triaje.frecuenciaRespiratoria || "—"}</td><td>rpm</td></tr>
+            <tr><td>Temperatura</td><td>${triaje.temperatura || "—"}</td><td>°C</td></tr>
+            <tr><td>Saturación O₂</td><td>${triaje.saturacionOxigeno || "—"}</td><td>%</td></tr>
+            <tr><td>Peso</td><td>${triaje.peso || "—"}</td><td>kg</td></tr>
+            <tr><td>Talla</td><td>${triaje.talla || "—"}</td><td>cm</td></tr>
+            <tr><td>Perímetro Cefálico</td><td>${triaje.perimetroCefalico || "—"}</td><td>cm</td></tr>
+            <tr><td>Perímetro Abdominal</td><td>${triaje.perimetroAbdominal || "—"}</td><td>cm</td></tr>
+            <tr><td>Glicemia</td><td>${triaje.glicemia || "—"}</td><td>mg/dL</td></tr>
+          </tbody>
+        </table>
+        `
+        : ""
+    }
 
     <div class="section-title">Datos Clínicos</div>
     <div class="field-grid">
@@ -2134,14 +2170,8 @@ function PantallaExito({ datos, onNueva }) {
 
     <!-- CABECERA DINAMAX -->
     <div class="header-top">
-      <div class="logo-area">
-        <div class="logo-circle">
-          <span style="color:white;font-weight:900;font-size:13px;">DX</span>
-        </div>
-        <div>
-          <div style="font-size:8px;color:#003366;font-weight:700;text-transform:uppercase;letter-spacing:1px;">CENTRO MÉDICO CON INTERNACION TRANSITORIA</div>
-          <div class="logo-text">DINAMAX <span class="srl">S.R.L.</span></div>
-        </div>
+      <div class="logo-area">        
+        <img src="/clinica-farma/CLINICA300.png" style="height:40px;" />   
       </div>
       <div style="text-align:right;">
         <div class="doc-title">Órdenes Médicas</div>
@@ -2332,12 +2362,8 @@ function PantallaExito({ datos, onNueva }) {
         <!-- HEADER -->
         <div class="header-top">
           <div class="logo-area">
-            <div class="logo-circle">
-              <span style="color:white;font-weight:900;font-size:13px;">DX</span>
-            </div>
-            <div>
-              <div style="font-size:8px;color:#003366;font-weight:700;text-transform:uppercase;letter-spacing:1px;">CENTRO MÉDICO CON INTERNACION TRANSITORIA</div>
-              <div class="logo-text">DINAMAX <span class="srl">S.R.L.</span></div>
+            <div class="logo-area">
+              <img src="/clinica-farma/CLINICA300.png" style="height:60px;" />
             </div>
           </div>
           <div style="text-align:right;">
