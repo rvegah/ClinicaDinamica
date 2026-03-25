@@ -320,6 +320,81 @@ export default function EditarPacientePage() {
     setTimeout(() => w.print(), 300);
   };
 
+  const imprimirCaratulaFolder = () => {
+    const w = window.open("", "_blank", "width=800,height=600");
+    const ahora = new Date().toLocaleDateString("es-BO", {
+      day: "numeric",
+      month: "numeric",
+      year: "numeric",
+    });
+
+    w.document.write(`
+    <html>
+    <head>
+      <title>Carátula Folder</title>
+      <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family: Arial, sans-serif; font-size: 13px; padding: 32px 40px; max-width: 740px; }
+        .border-box { border: 2px solid #333; padding: 28px 36px; min-height: 420px; position: relative; }
+        .header { display:flex; align-items:center; justify-content:space-between; margin-bottom: 28px; }
+        .header-right { text-align:left; }
+        .header-right .fecha-label { font-size:14px; font-weight:700; margin-bottom:16px; }
+        .header-right .folio-line { display:flex; align-items:center; gap:8px; font-size:14px; font-weight:700; }
+        .folio-blank { display:inline-block; width:130px; border-bottom:1.5px solid #333; }
+        .hc-row { display:flex; align-items:center; gap:16px; margin-bottom:24px; white-space:nowrap; }
+        .hc-label { font-size:15px; font-weight:800; color:#333; }
+        .hc-number { font-size:22px; font-weight:900; color:#e65c00; letter-spacing:1px; }
+        .data-block { margin-top:8px; line-height:2.1; }
+        .data-block p { font-size:14px; font-weight:700; color:#111; }
+        @page { margin: 8mm; }
+        @media print { button { display:none!important; } }
+      </style>
+    </head>
+    <body>
+      <div class="border-box">
+
+        <!-- HEADER: logo + fecha/folio -->
+        <div class="header">
+          <div>
+            <img src="/clinica-farma/CLINICA300.png" style="height:50px;" />
+          </div>
+          <div class="header-right">
+            <div class="fecha-label">Fecha: ${ahora}</div>
+            <div class="folio-line">
+              Folio N° <span class="folio-blank"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- N° HC -->
+        <div class="hc-row">
+          <span class="hc-label">Historia Clinica</span>
+          <span class="hc-number">N° ${pacienteOriginal?.numeroHistoriaClinica || "—"}</span>
+        </div>
+
+        <!-- DATOS PACIENTE -->
+        <div class="data-block">
+          <p>Paciente: ${(form.nombrePaciente + " " + form.apellidosPaciente).trim() || "—"}</p>
+          <p>N° Documento: ${form.numeroDocumento || "—"}</p>
+          <p>&nbsp;</p>
+          <p>Direccion: ${form.direccionCompleta || "—"}</p>
+          <p>Telefono: ${form.telefono || "—"}</p>
+          <p>Celular: ${form.telefonoCelular || "—"}</p>
+        </div>
+
+      </div>
+
+      <br/>
+      <button onclick="window.print()" style="width:100%;padding:10px;background:#003366;color:white;border:none;border-radius:4px;cursor:pointer;font-size:13px;font-weight:bold;margin-top:8px;">
+        🖨️ Imprimir Carátula Folder
+      </button>
+    </body>
+    </html>`);
+    w.document.close();
+    w.focus();
+    setTimeout(() => w.print(), 300);
+  };
+
   return (
     <Box sx={{ maxWidth: 800, mx: "auto" }}>
       {/* HEADER */}
@@ -609,7 +684,23 @@ export default function EditarPacientePage() {
           }}
         >
           Cancelar
-        </Button>        
+        </Button> 
+        <Button
+          variant="outlined"
+          startIcon={<Print />}
+          onClick={imprimirCaratulaFolder}
+          disabled={guardando}
+          sx={{
+            borderRadius: 1.5,
+            fontWeight: 600,
+            textTransform: "none",
+            borderColor: "#e65c00",
+            color: "#e65c00",
+            "&:hover": { borderColor: "#c0392b", bgcolor: "#fff5f0" },
+          }}
+        >
+          Imprimir Folder
+        </Button>       
         <Button
           variant="outlined"
           startIcon={<Print />}
