@@ -211,10 +211,6 @@ export default function EditarPacientePage() {
         * { margin:0; padding:0; box-sizing:border-box; }
         body { font-family: Arial, sans-serif; font-size: 12px; padding: 24px; max-width: 720px; }
         .header-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; border-bottom:3px solid #e65c00; padding-bottom:10px; }
-        .logo-area { display:flex; align-items:center; gap:10px; }
-        .logo-circle { width:56px; height:56px; border-radius:50%; background:linear-gradient(135deg,#e65c00,#003366); display:flex; align-items:center; justify-content:center; }
-        .logo-text { font-size:22px; font-weight:900; color:#e65c00; letter-spacing:1px; }
-        .srl { font-size:10px; color:#e65c00; font-weight:700; }
         .doc-title { font-size:16px; font-weight:900; color:#333; text-transform:uppercase; }
         .doc-sub { font-size:11px; color:#555; margin-top:2px; }
         .info-block { margin:10px 0 6px; font-size:11px; line-height:1.9; }
@@ -225,11 +221,8 @@ export default function EditarPacientePage() {
         .field label { font-weight:700; color:#555; display:block; font-size:10px; margin-bottom:2px; }
         .field p { border-bottom:1px solid #ddd; padding-bottom:3px; min-height:18px; }
         .field.full { grid-column: span 2; }
-        .field-blank { min-height: 40px; border-bottom:1px solid #ddd; margin-bottom:8px; }
         .divider { border-top:2px solid #333; margin:16px 0; }
-        .firma-section { display:flex; justify-content:space-between; align-items:flex-end; margin-top:60px; }
-        .firma-box { text-align:center; }
-        .firma-line { border-top:1px solid #333; width:160px; margin:0 auto 4px; }
+        @page { margin: 10mm; }
         @media print { button { display:none!important; } }
       </style>
     </head>
@@ -237,10 +230,8 @@ export default function EditarPacientePage() {
 
       <!-- HEADER -->
       <div class="header-top">
-        <div class="logo-area">
-          <div class="logo-area">
-            <img src="/clinica-farma/CLINICA300.png" style="height:60px;" />
-          </div>
+        <div>
+          <img src="/clinica-farma/CLINICA300.png" style="height:60px;" />
         </div>
         <div style="text-align:right;">
           <div class="doc-title">Historia Clínica</div>
@@ -249,7 +240,7 @@ export default function EditarPacientePage() {
         </div>
       </div>
 
-      <!-- DATOS PACIENTE -->
+      <!-- FECHA / HC -->
       <div class="info-block">
         <div><span>Fecha de Registro:</span> ${ahora}</div>
         <div><span>N° Historia Clínica:</span> ${pacienteOriginal?.numeroHistoriaClinica || "—"}</div>
@@ -296,11 +287,6 @@ export default function EditarPacientePage() {
           <label>Correo Electrónico</label>
           <p>${form.correoElectronico || "—"}</p>
         </div>
-      </div>
-
-      <!-- UBICACIÓN -->
-      <div class="section-title">Ubicación</div>
-      <div class="field-grid">
         <div class="field">
           <label>País</label>
           <p>${form.pais || "—"}</p>
@@ -320,58 +306,6 @@ export default function EditarPacientePage() {
         <div class="field full">
           <label>Dirección Completa</label>
           <p>${form.direccionCompleta || "—"}</p>
-        </div>
-      </div>
-
-      <!-- MOTIVO DE CONSULTA (en blanco para que el médico llene) -->
-      <div class="section-title">Motivo de Consulta</div>
-      <div class="field-blank"></div>
-
-      <!-- ANTECEDENTES -->
-      <div class="section-title">Antecedentes</div>
-      <div class="field-grid">
-        <div class="field full">
-          <label>Antecedentes Personales Patológicos</label>
-          <div class="field-blank"></div>
-        </div>
-        <div class="field full">
-          <label>Antecedentes Familiares</label>
-          <div class="field-blank"></div>
-        </div>
-        <div class="field full">
-          <label>Alergias / Medicamentos</label>
-          <div class="field-blank"></div>
-        </div>
-      </div>
-
-      <!-- EXAMEN FÍSICO -->
-      <div class="section-title">Examen Físico Inicial</div>
-      <div class="field-grid">
-        <div class="field"><label>Presión Arterial</label><div class="field-blank"></div></div>
-        <div class="field"><label>Frecuencia Cardíaca</label><div class="field-blank"></div></div>
-        <div class="field"><label>Temperatura</label><div class="field-blank"></div></div>
-        <div class="field"><label>Saturación O₂</label><div class="field-blank"></div></div>
-        <div class="field"><label>Peso</label><div class="field-blank"></div></div>
-        <div class="field"><label>Talla</label><div class="field-blank"></div></div>
-      </div>
-
-      <!-- OBSERVACIONES -->
-      <div class="section-title">Observaciones Iniciales</div>
-      <div class="field-blank" style="min-height:60px;"></div>
-
-      <div class="divider"></div>
-
-      <!-- FIRMA -->
-      <div class="firma-section">
-        <div class="firma-box">
-          <div class="firma-line"></div>
-          <p style="font-size:11px;font-weight:700;">Médico Responsable</p>
-          <p style="font-size:10px;color:#666;">Firma y Sello</p>
-        </div>
-        <div class="firma-box">
-          <div class="firma-line"></div>
-          <p style="font-size:11px;">Firma del Paciente</p>
-          <p style="font-size:10px;color:#666;">${form.nombrePaciente} ${form.apellidosPaciente}</p>
         </div>
       </div>
 

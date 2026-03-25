@@ -157,8 +157,10 @@ export default function SignosVitalesPage() {
         saturacionOxigeno: Number(signos.saturacionOxigeno) || 0,
         peso: Number(signos.peso) || 0,
         talla: Number(signos.talla) || 0,
-        perimetroCefalico: Number(signos.perimetroCefalico) || 0,
-        perimetroAbdominal: Number(signos.perimetroAbdominal) || 0,
+        /*perimetroCefalico: Number(signos.perimetroCefalico) || 0,
+        perimetroAbdominal: Number(signos.perimetroAbdominal) || 0,*/
+        perimetroCefalico: 0,
+        perimetroAbdominal: 0,
         glicemia: Number(signos.glicemia) || 0,
         observaciones: signos.observaciones || "",
         usuarioRegistroAlta: usuario.id,
@@ -228,14 +230,11 @@ export default function SignosVitalesPage() {
     const w = window.open("", "_blank", "width=680,height=900");
     const ahora = new Date();
     const fechaHora = ahora.toLocaleString("es-BO", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
+      day: "2-digit", month: "2-digit", year: "numeric",
+      hour: "2-digit", minute: "2-digit",
     });
 
-    const filas = [
+    const svsHtml = [
       ["Presión Sistólica", signosData.presionSistolica, "mmHg"],
       ["Presión Diastólica", signosData.presionDiastolica, "mmHg"],
       ["Frec. Cardíaca", signosData.frecuenciaCardiaca, "lpm"],
@@ -244,20 +243,18 @@ export default function SignosVitalesPage() {
       ["Saturación O₂", signosData.saturacionOxigeno, "%"],
       ["Peso", signosData.peso, "kg"],
       ["Talla", signosData.talla, "cm"],
-      ["Perímetro Cefálico", signosData.perimetroCefalico, "cm"],
-      ["Perímetro Abdominal", signosData.perimetroAbdominal, "cm"],
+      // ["Perímetro Cefálico", signosData.perimetroCefalico, "cm"],
+      // ["Perímetro Abdominal", signosData.perimetroAbdominal, "cm"],
       ["Glicemia", signosData.glicemia, "mg/dL"],
     ]
       .filter(([, val]) => Number(val) > 0)
-      .map(
-        ([label, val, unit]) => `
-      <tr>
-        <td style="padding:6px 10px;border:1px solid #ddd;font-size:12px;">${label}</td>
-        <td style="padding:6px 10px;border:1px solid #ddd;font-size:13px;font-weight:700;text-align:center;">${val}</td>
-        <td style="padding:6px 10px;border:1px solid #ddd;font-size:11px;color:#555;text-align:center;">${unit}</td>
-      </tr>`,
-      )
-      .join("");
+      .map(([label, val, unit]) =>
+        `<div class="sv-item">
+          <span class="sv-label">${label}</span>
+          <span class="sv-value">${val}</span>
+          <span class="sv-unit">${unit}</span>
+        </div>`
+      ).join("");
 
     w.document.write(`
     <html>
@@ -267,32 +264,29 @@ export default function SignosVitalesPage() {
         * { margin:0; padding:0; box-sizing:border-box; }
         body { font-family: Arial, sans-serif; font-size: 12px; padding: 24px; max-width: 620px; }
         .header-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; border-bottom:3px solid #e65c00; padding-bottom:10px; }
-        .logo-area { display:flex; align-items:center; gap:10px; }
-        .logo-circle { width:56px; height:56px; border-radius:50%; background:linear-gradient(135deg,#e65c00,#003366); display:flex; align-items:center; justify-content:center; }
-        .logo-text { font-size:22px; font-weight:900; color:#e65c00; letter-spacing:1px; }
-        .srl { font-size:10px; color:#e65c00; font-weight:700; }
         .doc-title { font-size:16px; font-weight:900; color:#333; text-transform:uppercase; }
         .doc-sub { font-size:11px; color:#555; margin-top:2px; }
-        .info-block { margin:10px 0; font-size:11px; line-height:1.9; }
+        .info-block { margin:8px 0; font-size:11px; line-height:1.8; }
         .info-block span { font-weight:700; }
-        table { width:100%; border-collapse:collapse; margin:12px 0; }
-        th { background:#003366; color:white; padding:7px 10px; font-size:11px; text-align:left; text-transform:uppercase; }
-        .obs-box { margin-top:12px; padding:10px 12px; border:1px solid #ddd; border-left:3px solid #e65c00; border-radius:4px; font-size:11px; }
-        .obs-label { font-weight:700; color:#333; margin-bottom:4px; }
-        .divider { border-top:2px solid #333; margin:16px 0; }
-        .firma-section { display:flex; justify-content:space-between; align-items:flex-end; margin-top:50px; }
+        .sv-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:4px; margin:8px 0; }
+        .sv-item { text-align:center; padding:5px 3px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:3px; }
+        .sv-label { font-size:9px; color:#6b7280; display:block; margin-bottom:2px; }
+        .sv-value { font-size:12px; font-weight:800; color:#065f46; display:block; }
+        .sv-unit { font-size:9px; color:#6b7280; }
+        .obs-box { margin-top:8px; padding:8px 10px; border:1px solid #ddd; border-left:3px solid #e65c00; border-radius:4px; font-size:11px; }
+        .obs-label { font-weight:700; color:#333; margin-bottom:3px; }
+        .divider { border-top:2px solid #333; margin:12px 0; }
+        .firma-section { display:flex; justify-content:space-between; align-items:flex-end; margin-top:40px; }
         .firma-box { text-align:center; }
         .firma-line { border-top:1px solid #333; width:150px; margin:0 auto 4px; }
+        @page { margin: 10mm; }
         @media print { button { display:none!important; } }
       </style>
     </head>
     <body>
-
       <div class="header-top">
-        <div class="logo-area">
-          <div class="logo-area">
-            <img src="/clinica-farma/CLINICA300.png" style="height:60px;" />
-          </div>
+        <div>
+          <img src="/clinica-farma/CLINICA300.png" style="height:60px;" />
         </div>
         <div style="text-align:right;">
           <div class="doc-title">Hoja de Triaje</div>
@@ -309,26 +303,13 @@ export default function SignosVitalesPage() {
 
       <div class="divider"></div>
 
-      <table>
-        <thead>
-          <tr>
-            <th style="width:50%;">Signo Vital</th>
-            <th style="width:30%;text-align:center;">Valor</th>
-            <th style="width:20%;text-align:center;">Unidad</th>
-          </tr>
-        </thead>
-        <tbody>${filas}</tbody>
-      </table>
+      <div class="sv-grid">${svsHtml}</div>
 
-      ${
-        signosData.observaciones
-          ? `
+      ${signosData.observaciones ? `
         <div class="obs-box">
           <div class="obs-label">Observaciones de Enfermería:</div>
           <div>${signosData.observaciones}</div>
-        </div>`
-          : ""
-      }
+        </div>` : ""}
 
       <div class="divider"></div>
 
@@ -658,12 +639,8 @@ export default function SignosVitalesPage() {
                 {campoNumerico("Saturación O₂", "saturacionOxigeno", "%")}
                 {campoNumerico("Peso", "peso", "kg")}
                 {campoNumerico("Talla", "talla", "cm")}
-                {campoNumerico("Perímetro Cefálico", "perimetroCefalico", "cm")}
-                {campoNumerico(
-                  "Perímetro Abdominal",
-                  "perimetroAbdominal",
-                  "cm",
-                )}
+                {/* {campoNumerico("Perímetro Cefálico", "perimetroCefalico", "cm")} */}
+                {/* {campoNumerico("Perímetro Abdominal", "perimetroAbdominal", "cm",)} */}
                 {campoNumerico("Glicemia", "glicemia", "mg/dL")}
               </Box>
 

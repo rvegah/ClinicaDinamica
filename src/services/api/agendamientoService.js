@@ -103,6 +103,20 @@ const agendamientoService = {
     );
     return res.data;
   },
+
+  // Citas disponibles por turno
+  citasDisponibles: async ({ medicoId, fecha, diaSemana, horaInicio, horaFin }) => {
+    const res = await clinicaApiClient.get("/Agendamiento/CitasDisponibles", {
+      params: {
+        Medico_ID: medicoId,
+        FechaProgramacion: fecha,
+        DiaSemana: diaSemana,
+        HoraInicio: horaInicio,
+        HoraFin: horaFin,
+      },
+    });
+    return res.data;
+  },
 };
 
 export default agendamientoService;

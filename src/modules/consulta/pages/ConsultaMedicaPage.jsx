@@ -929,16 +929,8 @@ function FormularioConsulta({ cita, consultaMedica, onFinalizar }) {
                   { label: "Peso", value: triaje.peso, unit: "kg" },
                   { label: "Talla", value: triaje.talla, unit: "cm" },
                   { label: "IMC", value: triaje.imc, unit: "" },
-                  {
-                    label: "Perm. Cefálico",
-                    value: triaje.perimetroCefalico,
-                    unit: "cm",
-                  },
-                  {
-                    label: "Perm. Abdominal",
-                    value: triaje.perimetroAbdominal,
-                    unit: "cm",
-                  },
+                  /*{ label: "Perm. Cefálico", value: triaje.perimetroCefalico, unit: "cm", },
+                  { label: "Perm. Abdominal", value: triaje.perimetroAbdominal, unit: "cm", },*/
                   { label: "Glicemia", value: triaje.glicemia, unit: "mg/dL" },
                 ]
                   .filter(
@@ -1178,33 +1170,25 @@ function FormularioConsulta({ cita, consultaMedica, onFinalizar }) {
                 mb: 2,
               }}
             >
-              <TextField
-                select
+              <Autocomplete
                 size="small"
-                label="Diagnóstico CIE-10 *"
-                value={diagForm.diagnostico_ID}
-                onChange={(e) => {
-                  const d = cie10Lista.find(
-                    (x) => x.diagnosticoCIE10_ID === Number(e.target.value),
-                  );
+                options={cie10Lista}
+                getOptionLabel={(d) => `${d.nombre} — ${d.codigo}`}
+                value={cie10Lista.find(d => d.diagnosticoCIE10_ID === diagForm.diagnostico_ID) || null}
+                onChange={(_, d) => {
                   setDiagForm((p) => ({
                     ...p,
-                    diagnostico_ID: Number(e.target.value),
+                    diagnostico_ID: d?.diagnosticoCIE10_ID || "",
                     codigoCIE10: d?.codigo || "",
                     nombre: d?.nombre || "",
                   }));
                 }}
-              >
-                <MenuItem value="">— Seleccione —</MenuItem>
-                {cie10Lista.map((d) => (
-                  <MenuItem
-                    key={d.diagnosticoCIE10_ID}
-                    value={d.diagnosticoCIE10_ID}
-                  >
-                    {d.codigo} — {d.nombre}
-                  </MenuItem>
-                ))}
-              </TextField>
+                renderInput={(params) => (
+                  <TextField {...params} label="Diagnóstico CIE-10 *" />
+                )}
+                noOptionsText="Sin resultados"
+                isOptionEqualToValue={(opt, val) => opt.diagnosticoCIE10_ID === val.diagnosticoCIE10_ID}
+              />
               <TextField
                 select
                 size="small"
@@ -1992,31 +1976,34 @@ function PantallaExito({ datos, onNueva }) {
     <title>Hoja de Consulta Médica</title>
     <style>
       * { margin:0; padding:0; box-sizing:border-box; }
-      body { font-family: Arial, sans-serif; font-size: 12px; padding: 24px; max-width: 720px; }
-      .header-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; border-bottom:3px solid #e65c00; padding-bottom:10px; }
-      .logo-area { display:flex; align-items:center; gap:10px; }
-      .logo-circle { width:56px; height:56px; border-radius:50%; background:linear-gradient(135deg,#e65c00,#003366); display:flex; align-items:center; justify-content:center; }
-      .logo-text { font-size:22px; font-weight:900; color:#e65c00; letter-spacing:1px; }
-      .srl { font-size:10px; color:#e65c00; font-weight:700; }
-      .doc-title { font-size:16px; font-weight:900; color:#333; text-transform:uppercase; }
-      .doc-sub { font-size:11px; color:#555; margin-top:2px; }
-      .info-block { margin:10px 0 6px; font-size:11px; line-height:1.8; }
+      body { font-family: Arial, sans-serif; font-size: 11px; padding: 16px; max-width: 720px; }
+      .header-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; border-bottom:3px solid #e65c00; padding-bottom:8px; }
+      .doc-title { font-size:14px; font-weight:900; color:#333; text-transform:uppercase; }
+      .doc-sub { font-size:10px; color:#555; margin-top:1px; }
+      .info-block { margin:6px 0 4px; font-size:11px; line-height:1.6; }
       .info-block span { font-weight:700; }
-      .section-title { font-size:11px; font-weight:700; text-transform:uppercase;
-        background:#f0f0f0; padding:4px 8px; border-left:3px solid #e65c00; margin:12px 0 6px; }
-      .field-grid { display:grid; grid-template-columns:1fr 1fr; gap:6px 20px; margin-bottom:4px; }
+      .section-title { font-size:10px; font-weight:700; text-transform:uppercase;
+        background:#f0f0f0; padding:3px 8px; border-left:3px solid #e65c00; margin:8px 0 4px; }
+      .field-grid { display:grid; grid-template-columns:1fr 1fr; gap:4px 20px; margin-bottom:4px; }
       .field { font-size:11px; }
       .field label { font-weight:700; color:#555; display:block; font-size:10px; margin-bottom:1px; }
-      .field p { border-bottom:1px solid #ddd; padding-bottom:3px; min-height:18px; }
+      .field p { border-bottom:1px solid #ddd; padding-bottom:2px; min-height:16px; }
       .field.full { grid-column: span 2; }
-      table { width:100%; border-collapse:collapse; font-size:11px; margin-top:4px; }
-      th { background:#003366; color:white; padding:5px 8px; text-align:left; font-size:10px; text-transform:uppercase; }
-      td { padding:5px 8px; border-bottom:1px solid #eee; }
+      /* Signos vitales en grilla horizontal compacta */
+      .sv-grid { display:grid; grid-template-columns:repeat(6,1fr); gap:4px; margin-bottom:4px; }
+      .sv-item { text-align:center; padding:4px 2px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:3px; }
+      .sv-label { font-size:9px; color:#6b7280; display:block; }
+      .sv-value { font-size:11px; font-weight:800; color:#065f46; }
+      .sv-unit { font-size:9px; color:#6b7280; }
+      table { width:100%; border-collapse:collapse; font-size:10px; margin-top:3px; }
+      th { background:#003366; color:white; padding:4px 6px; text-align:left; font-size:9px; text-transform:uppercase; }
+      td { padding:3px 6px; border-bottom:1px solid #eee; }
       tr:nth-child(even) td { background:#f9f9f9; }
-      .firma-section { display:flex; justify-content:space-between; align-items:flex-end; margin-top:50px; }
+      .firma-section { display:flex; justify-content:space-between; align-items:flex-end; margin-top:24px; }
       .firma-box { text-align:center; }
-      .firma-line { border-top:1px solid #333; width:160px; margin:0 auto 4px; }
-      .divider { border-top:2px solid #333; margin:16px 0; }
+      .firma-line { border-top:1px solid #333; width:160px; margin:0 auto 3px; }
+      .divider { border-top:2px solid #333; margin:10px 0; }
+      @page { margin: 10mm; }
       @media print { button { display:none!important; } }
     </style>
   </head>
@@ -2046,29 +2033,55 @@ function PantallaExito({ datos, onNueva }) {
     ${
       triaje
         ? `
-        <div class="section-title">Signos Vitales</div>
-        <table>
-          <thead>
-            <tr>
-              <th>Signo</th>
-              <th>Valor</th>
-              <th>Unidad</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr><td>Presión Sistólica</td><td>${triaje.presionArterialSistolica || "—"}</td><td>mmHg</td></tr>
-            <tr><td>Presión Diastólica</td><td>${triaje.presionArterialDiastolica || "—"}</td><td>mmHg</td></tr>
-            <tr><td>Frec. Cardíaca</td><td>${triaje.frecuenciaCardiaca || "—"}</td><td>lpm</td></tr>
-            <tr><td>Frec. Respiratoria</td><td>${triaje.frecuenciaRespiratoria || "—"}</td><td>rpm</td></tr>
-            <tr><td>Temperatura</td><td>${triaje.temperatura || "—"}</td><td>°C</td></tr>
-            <tr><td>Saturación O₂</td><td>${triaje.saturacionOxigeno || "—"}</td><td>%</td></tr>
-            <tr><td>Peso</td><td>${triaje.peso || "—"}</td><td>kg</td></tr>
-            <tr><td>Talla</td><td>${triaje.talla || "—"}</td><td>cm</td></tr>
-            <tr><td>Perímetro Cefálico</td><td>${triaje.perimetroCefalico || "—"}</td><td>cm</td></tr>
-            <tr><td>Perímetro Abdominal</td><td>${triaje.perimetroAbdominal || "—"}</td><td>cm</td></tr>
-            <tr><td>Glicemia</td><td>${triaje.glicemia || "—"}</td><td>mg/dL</td></tr>
-          </tbody>
-        </table>
+        <div class="section-title">Signos Vitales — Triaje de Enfermería</div>
+        <div class="sv-grid">
+          ${[
+            {
+              label: "P. Sistólica",
+              value: triaje.presionArterialSistolica,
+              unit: "mmHg",
+            },
+            {
+              label: "P. Diastólica",
+              value: triaje.presionArterialDiastolica,
+              unit: "mmHg",
+            },
+            {
+              label: "F. Cardíaca",
+              value: triaje.frecuenciaCardiaca,
+              unit: "lpm",
+            },
+            {
+              label: "F. Respiratoria",
+              value: triaje.frecuenciaRespiratoria,
+              unit: "rpm",
+            },
+            { label: "Temperatura", value: triaje.temperatura, unit: "°C" },
+            {
+              label: "Saturación O₂",
+              value: triaje.saturacionOxigeno,
+              unit: "%",
+            },
+            { label: "Peso", value: triaje.peso, unit: "kg" },
+            { label: "Talla", value: triaje.talla, unit: "cm" },
+            { label: "IMC", value: triaje.imc, unit: "" },
+            /*{ label: "P. Cefálico", value: triaje.perimetroCefalico, unit: "cm",},
+            { label: "P. Abdominal", value: triaje.perimetroAbdominal, unit: "cm", },*/
+            { label: "Glicemia", value: triaje.glicemia, unit: "mg/dL" },
+          ]
+            .filter(
+              (s) =>
+                s.value !== null &&
+                s.value !== undefined &&
+                s.value !== "" &&
+                Number(s.value) > 0,
+            )
+            .map(
+              ({ label, value, unit }) =>
+                `<div class="sv-item"><span class="sv-label">${label}</span><span class="sv-value">${value}</span> <span class="sv-unit">${unit}</span></div>`,
+            )
+            .join("")}
+        </div>
         `
         : ""
     }
