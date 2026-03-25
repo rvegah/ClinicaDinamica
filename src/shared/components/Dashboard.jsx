@@ -414,6 +414,9 @@ function Dashboard() {
   const esSuperAdmin = user?.rol === "SuperAdmin";
   const esAdmisionista = user?.rol === "Admicionista";
   const verTotales = esSuperAdmin || esAdmisionista;
+  const esMedico = user?.rol === "Medico";
+  const esEnfermera = user?.rol === "Enfermera";
+  const miPersonalId = user?.personalMedico_ID || null;
   const [totales, setTotales] = useState(null);
 
   const [fechaReporte, setFechaReporte] = useState(fechaHoy());
@@ -491,6 +494,34 @@ function Dashboard() {
       })
       .catch(() => {});
   }, [verTotales]);
+
+  useEffect(() => {
+    if (!miPersonalId) return;
+    if (!esMedico && !esEnfermera) return;
+    const cargar = async () => {
+      setCargandoReporte(true);
+      try {
+        if (esMedico) {
+          const res = await atencionMedicaService.atencionMedico({
+            medicoId: miPersonalId,
+            fecha: fechaReporte,
+          });
+          setReporteMedico(res.datos || []);
+        }
+        if (esEnfermera) {
+          const res = await atencionMedicaService.atencionEnfermera({
+            enfermeraId: miPersonalId,
+            fecha: fechaReporte,
+          });
+          setReporteEnfermera(res.datos || []);
+        }
+      } catch {
+      } finally {
+        setCargandoReporte(false);
+      }
+    };
+    cargar();
+  }, [fechaReporte, miPersonalId]);
 
   const totalEnfermeria = (totales?.ingresosEnfermeria || []).reduce(
     (s, r) => s + (Number(r.costoTotal) || 0),
@@ -681,6 +712,238 @@ function Dashboard() {
           </Box>
         </Box>
       </Paper>
+
+      {(esMedico || esEnfermera) && (
+        <Paper
+          elevation={0}
+          sx={{
+            mb: 3,
+            borderRadius: 2,
+            border: "1px solid #e5e7eb",
+            overflow: "hidden",
+          }}
+        >
+          <Box
+            sx={{
+              px: 2.5,
+              py: 1.75,
+              bgcolor: esMedico ? "#eff6ff" : "#f0fdf4",
+              borderBottom: `1px solid ${esMedico ? "#bfdbfe" : "#a7f3d0"}`,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              flexWrap: "wrap",
+              gap: 1.5,
+            }}
+          >
+            <Typography
+              sx={{
+                fontWeight: 800,
+                fontSize: "0.9rem",
+                color: esMedico ? "#1e40af" : "#065f46",
+              }}
+            >
+              {esMedico
+                ? "🩺 Mis Atenciones del Día"
+                : "💉 Mis Atenciones del Día"}
+            </Typography>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+              <TextField
+                size="small"
+                type="date"
+                label="Fecha"
+                value={fechaReporte}
+                onChange={(e) => setFechaReporte(e.target.value)}
+                InputLabelProps={{ shrink: true }}
+              />
+              {cargandoReporte && (
+                <CircularProgress
+                  size={16}
+                  sx={{ color: esMedico ? "#1e40af" : "#065f46" }}
+                />
+              )}
+            </Box>
+          </Box>
+
+          {esMedico &&
+            (reporteMedico.length === 0 ? (
+              <Box sx={{ py: 3, textAlign: "center" }}>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ fontStyle: "italic" }}
+                >
+                  Sin atenciones para esta fecha
+                </Typography>
+              </Box>
+            ) : (
+              <>
+                <Box
+                  sx={{
+                    display: "grid",
+                    gridTemplateColumns: "2fr 1.2fr 2fr 2fr",
+                    bgcolor: "#f9fafb",
+                    borderBottom: "1px solid #e5e7eb",
+                    px: 2,
+                    py: 1,
+                  }}
+                >
+                  {["Paciente", "Hora", "Motivo", "Diagnóstico"].map((h) => (
+                    <Typography
+                      key={h}
+                      variant="caption"
+                      sx={{
+                        fontWeight: 700,
+                        color: "#6b7280",
+                        textTransform: "uppercase",
+                        fontSize: 10,
+                      }}
+                    >
+                      {h}
+                    </Typography>
+                  ))}
+                </Box>
+                {reporteMedico.map((r, i) => (
+                  <Box
+                    key={i}
+                    sx={{
+                      display: "grid",
+                      gridTemplateColumns: "2fr 1.2fr 2fr 2fr",
+                      px: 2,
+                      py: 1.25,
+                      borderBottom:
+                        i < reporteMedico.length - 1
+                          ? "1px solid #f3f4f6"
+                          : "none",
+                      "&:hover": { bgcolor: "#fafafa" },
+                    }}
+                  >
+                    <Typography
+                      variant="caption"
+                      color="#111827"
+                      fontWeight={600}
+                    >
+                      {r.paciente}
+                    </Typography>
+                    <Typography variant="caption" color="#6b7280">
+                      {r.fecha?.split(" ")[1]?.slice(0, 5) || "—"}
+                    </Typography>
+                    <Typography variant="caption" color="#374151">
+                      {r.motivoConsulta || "—"}
+                    </Typography>
+                    <Typography variant="caption" color="#374151">
+                      {r.diagnostico || "—"}
+                    </Typography>
+                  </Box>
+                ))}
+                <Box
+                  sx={{
+                    px: 2,
+                    py: 1,
+                    bgcolor: "#eff6ff",
+                    borderTop: "1px solid #bfdbfe",
+                  }}
+                >
+                  <Typography
+                    variant="caption"
+                    color="#1e40af"
+                    fontWeight={700}
+                  >
+                    {reporteMedico.length} atención(es) — {user.nombreCompleto}
+                  </Typography>
+                </Box>
+              </>
+            ))}
+
+          {esEnfermera &&
+            (reporteEnfermera.length === 0 ? (
+              <Box sx={{ py: 3, textAlign: "center" }}>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ fontStyle: "italic" }}
+                >
+                  Sin atenciones para esta fecha
+                </Typography>
+              </Box>
+            ) : (
+              <>
+                <Box
+                  sx={{
+                    display: "grid",
+                    gridTemplateColumns: "2fr 1.2fr 2fr",
+                    bgcolor: "#f9fafb",
+                    borderBottom: "1px solid #e5e7eb",
+                    px: 2,
+                    py: 1,
+                  }}
+                >
+                  {["Paciente", "Hora", "Motivo"].map((h) => (
+                    <Typography
+                      key={h}
+                      variant="caption"
+                      sx={{
+                        fontWeight: 700,
+                        color: "#6b7280",
+                        textTransform: "uppercase",
+                        fontSize: 10,
+                      }}
+                    >
+                      {h}
+                    </Typography>
+                  ))}
+                </Box>
+                {reporteEnfermera.map((r, i) => (
+                  <Box
+                    key={i}
+                    sx={{
+                      display: "grid",
+                      gridTemplateColumns: "2fr 1.2fr 2fr",
+                      px: 2,
+                      py: 1.25,
+                      borderBottom:
+                        i < reporteEnfermera.length - 1
+                          ? "1px solid #f3f4f6"
+                          : "none",
+                      "&:hover": { bgcolor: "#fafafa" },
+                    }}
+                  >
+                    <Typography
+                      variant="caption"
+                      color="#111827"
+                      fontWeight={600}
+                    >
+                      {r.paciente}
+                    </Typography>
+                    <Typography variant="caption" color="#6b7280">
+                      {r.fecha?.split(" ")[1]?.slice(0, 5) || "—"}
+                    </Typography>
+                    <Typography variant="caption" color="#374151">
+                      {r.motivoAtencion || "—"}
+                    </Typography>
+                  </Box>
+                ))}
+                <Box
+                  sx={{
+                    px: 2,
+                    py: 1,
+                    bgcolor: "#f0fdf4",
+                    borderTop: "1px solid #a7f3d0",
+                  }}
+                >
+                  <Typography
+                    variant="caption"
+                    color="#065f46"
+                    fontWeight={700}
+                  >
+                    {reporteEnfermera.length} atención(es) —{" "}
+                    {user.nombreCompleto}
+                  </Typography>
+                </Box>
+              </>
+            ))}
+        </Paper>
+      )}
 
       {/* ── TOTALES (solo Admisionista y SuperAdmin) ─────────────────── */}
       {verTotales && totales && (

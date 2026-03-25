@@ -20,6 +20,7 @@ import {
   Paper,
   Divider,
   InputAdornment,
+  IconButton,
 } from "@mui/material";
 import {
   Search,
@@ -30,6 +31,7 @@ import {
   Medication,
   ArrowBack,
   Print,
+  Delete,
 } from "@mui/icons-material";
 import { useSnackbar } from "notistack";
 import enfermeriaService from "../../../services/api/enfermeriaService";
@@ -670,11 +672,7 @@ export default function ServicioEnfermeriaPage() {
                 {insumosAgregados.map((ins, i) => (
                   <Box key={i} sx={listaItem}>
                     <Box>
-                      <Typography
-                        variant="body2"
-                        fontWeight={700}
-                        color="#111827"
-                      >
+                      <Typography variant="body2" fontWeight={700} color="#111827">
                         {ins.nombreInsumo}
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
@@ -682,16 +680,29 @@ export default function ServicioEnfermeriaPage() {
                         Total: Bs. {ins.costoTotal}
                       </Typography>
                     </Box>
-                    <Chip
-                      label={`Bs. ${ins.costoTotal}`}
-                      size="small"
-                      sx={{
-                        bgcolor: "#ede9fe",
-                        color: "#6d28d9",
-                        fontWeight: 700,
-                        fontSize: 10,
-                      }}
-                    />
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <Chip
+                        label={`Bs. ${ins.costoTotal}`}
+                        size="small"
+                        sx={{
+                          bgcolor: "#ede9fe",
+                          color: "#6d28d9",
+                          fontWeight: 700,
+                          fontSize: 10,
+                        }}
+                      />
+                      <IconButton
+                        size="small"
+                        onClick={() =>
+                          setInsumosAgregados((prev) =>
+                            prev.filter((_, idx) => idx !== i)
+                          )
+                        }
+                        sx={{ color: "#ef4444" }}
+                      >
+                        <Delete sx={{ fontSize: 15 }} />
+                      </IconButton>
+                    </Box>
                   </Box>
                 ))}
                 <Box

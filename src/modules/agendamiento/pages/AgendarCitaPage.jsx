@@ -126,6 +126,10 @@ export default function AgendarCitaPage() {
 
   const [tipoBusquedaPaciente, setTipoBusquedaPaciente] = useState("documento");
 
+  const [slotsDisponibles, setSlotsDisponibles] = useState([]);
+  const [cargandoSlots, setCargandoSlots] = useState(false);
+  const [slotSeleccionado, setSlotSeleccionado] = useState(null);
+
   // ─── CARGA CATÁLOGOS ────────────────────────────────────────────────────────
   useEffect(() => {
     const cargar = async () => {
@@ -153,6 +157,33 @@ export default function AgendarCitaPage() {
     };
     cargar();
   }, []);
+
+  useEffect(() => {
+    if (!fechaCita || !turnoSeleccionado || !medicoId) {
+      setSlotsDisponibles([]);
+      setSlotSeleccionado(null);
+      setHoraInicio("");
+      return;
+    }
+    const cargarSlots = async () => {
+      setCargandoSlots(true);
+      try {
+        const res = await agendamientoService.citasDisponibles({
+          medicoId: Number(medicoId),
+          fecha: fechaCita,
+          diaSemana: turnoSeleccionado.diaSemana,
+          horaInicio: turnoSeleccionado.horaInicio,
+          horaFin: turnoSeleccionado.horaFin,
+        });
+        setSlotsDisponibles(res.datos || []);
+      } catch {
+        setSlotsDisponibles([]);
+      } finally {
+        setCargandoSlots(false);
+      }
+    };
+    cargarSlots();
+  }, [fechaCita, turnoSeleccionado, medicoId]);
 
   // ─── FILTRAR MÉDICOS POR ESPECIALIDAD ────────────────────────────────────────
   const medicosFiltrados = especialidadId
@@ -215,8 +246,9 @@ export default function AgendarCitaPage() {
   const handleSeleccionarTurno = (turno) => {
     setTurnoSeleccionado(turno);
     setConsultorioId(turno.consultorio_ID);
-    setHoraInicio(turno.horaInicio);
-    // Auto-seleccionar especialidad del turno
+    setHoraInicio(""); // <- limpiar hora
+    setSlotSeleccionado(null); // <- limpiar slot
+    setSlotsDisponibles([]); // <- limpiar lista
     if (!especialidadId) setEspecialidadId(turno.especialidad_ID);
   };
 
@@ -262,7 +294,10 @@ export default function AgendarCitaPage() {
 
     setGuardando(true);
     try {
-      console.log('👤 USER sessionStorage:', JSON.parse(sessionStorage.getItem("user") || "{}"));
+      console.log(
+        "👤 USER sessionStorage:",
+        JSON.parse(sessionStorage.getItem("user") || "{}"),
+      );
       const payload = {
         paciente_ID: pacienteSeleccionado.paciente_ID,
         medico_ID: Number(medicoId),
@@ -937,7 +972,11 @@ export default function AgendarCitaPage() {
                 label="Fecha de Cita *"
                 type="date"
                 value={fechaCita}
-                onChange={(e) => setFechaCita(e.target.value)}
+                onChange={(e) => {
+                  setFechaCita(e.target.value);
+                  setSlotSeleccionado(null);
+                  setHoraInicio("");
+                }}
                 InputLabelProps={{ shrink: true }}
                 inputProps={{ min: fechaHoy() }}
               />
@@ -947,14 +986,18 @@ export default function AgendarCitaPage() {
                 fullWidth
                 size="small"
                 label="Hora de Inicio *"
-                type="time"
-                value={horaInicio}
-                onChange={(e) => setHoraInicio(e.target.value)}
+                value={
+                  horaInicio ||
+                  (slotSeleccionado ? slotSeleccionado.horaInicio : "")
+                }
+                InputProps={{ readOnly: true }}
                 InputLabelProps={{ shrink: true }}
+                placeholder="Seleccione un slot disponible"
+                sx={{ "& .MuiOutlinedInput-root": { bgcolor: "#f9fafb" } }}
                 helperText={
-                  turnoSeleccionado
-                    ? `Turno: ${turnoSeleccionado.horaInicio} — ${turnoSeleccionado.horaFin}`
-                    : ""
+                  slotSeleccionado
+                    ? `Slot ${slotSeleccionado.numeroCita} · hasta ${slotSeleccionado.horaFinal}`
+                    : "Seleccione un horario disponible abajo"
                 }
               />
             </Box>
@@ -977,6 +1020,121 @@ export default function AgendarCitaPage() {
               </TextField>
             </Box>
           </Box>
+
+          {/* SLOTS DISPONIBLES */}
+          {fechaCita && turnoSeleccionado && (
+            <Box sx={{ mb: 2 }}>
+              <Typography
+                variant="caption"
+                fontWeight={700}
+                color="#6b7280"
+                sx={{ mb: 1, display: "flex", alignItems: "center", gap: 1 }}
+              >
+                HORARIOS DISPONIBLES
+                {cargandoSlots && <CircularProgress size={12} />}
+              </Typography>
+
+              {!cargandoSlots && slotsDisponibles.length === 0 && (
+                <Alert
+                  severity="info"
+                  sx={{
+                    borderRadius: 1,
+                    border: "1px solid #bfdbfe",
+                    bgcolor: "#eff6ff",
+                    py: 0.5,
+                  }}
+                >
+                  No hay horarios disponibles para esta fecha.
+                </Alert>
+              )}
+
+              {slotsDisponibles.length > 0 && (
+                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+                  {slotsDisponibles.map((slot) => {
+                    const disponible = slot.estadoCita === "Disponible";
+                    const seleccionado =
+                      slotSeleccionado?.numeroCita === slot.numeroCita;
+                    return (
+                      <Box
+                        key={slot.numeroCita}
+                        onClick={() => {
+                          if (!disponible) return;
+                          setSlotSeleccionado(slot);
+                          setHoraInicio(slot.horaInicio);
+                        }}
+                        sx={{
+                          px: 1.5,
+                          py: 1,
+                          borderRadius: 1.5,
+                          border: `1.5px solid ${
+                            seleccionado
+                              ? "#2563eb"
+                              : disponible
+                                ? "#e5e7eb"
+                                : "#fca5a5"
+                          }`,
+                          bgcolor: seleccionado
+                            ? "#eff6ff"
+                            : disponible
+                              ? "white"
+                              : "#fff5f5",
+                          cursor: disponible ? "pointer" : "not-allowed",
+                          opacity: disponible ? 1 : 0.6,
+                          transition: "all 0.15s",
+                          minWidth: 90,
+                          textAlign: "center",
+                          ...(disponible &&
+                            !seleccionado && {
+                              "&:hover": {
+                                borderColor: "#93c5fd",
+                                bgcolor: "#f8faff",
+                              },
+                            }),
+                        }}
+                      >
+                        <Typography
+                          variant="caption"
+                          fontWeight={700}
+                          color={
+                            seleccionado
+                              ? "#2563eb"
+                              : disponible
+                                ? "#374151"
+                                : "#ef4444"
+                          }
+                          sx={{ display: "block", fontSize: 11 }}
+                        >
+                          {slot.numeroCita}
+                        </Typography>
+                        <Typography
+                          variant="caption"
+                          color={seleccionado ? "#2563eb" : "text.secondary"}
+                          sx={{ fontSize: 10 }}
+                        >
+                          {slot.horaInicio}
+                        </Typography>
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            display: "block",
+                            fontSize: 9,
+                            color: seleccionado
+                              ? "#2563eb"
+                              : disponible
+                                ? "#16a34a"
+                                : "#ef4444",
+                            fontWeight: 600,
+                          }}
+                        >
+                          {disponible ? "Libre" : slot.estadoCita}
+                        </Typography>
+                      </Box>
+                    );
+                  })}
+                </Box>
+              )}
+            </Box>
+          )}
 
           <TextField
             select

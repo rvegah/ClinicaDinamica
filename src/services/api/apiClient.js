@@ -3,12 +3,12 @@
 import axios from 'axios';
 
 // URL base del API
-const API_BASE_URL = 'https://dinamax-core.farmadinamica.com.bo/api/dinamax-core';
+const API_BASE_URL = import.meta.env.VITE_CORE_API_URL || 'https://dinamax-core.farmadinamica.com.bo/api/dinamax-core';
 
 // Crear instancia de Axios
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 15000, // 15 segundos
+  timeout: 45000, // 15 segundos
   headers: {
     'Content-Type': 'application/json',
   },

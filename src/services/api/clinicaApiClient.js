@@ -10,7 +10,7 @@ const CLINICA_API_BASE_URL =
 
 const clinicaApiClient = axios.create({
   baseURL: CLINICA_API_BASE_URL,
-  timeout: 15000,
+  timeout: 45000,
   headers: { 'Content-Type': 'application/json' },
 });
 
