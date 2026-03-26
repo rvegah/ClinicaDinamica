@@ -134,7 +134,14 @@ function TablaPacientes({ pacientes, onEditar }) {
             }}
           >
             {/* Paciente */}
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1.25, minWidth: 0 }}>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 1.25,
+                minWidth: 0,
+              }}
+            >
               <Box
                 sx={{
                   width: 34,
@@ -165,10 +172,16 @@ function TablaPacientes({ pacientes, onEditar }) {
                     variant="body2"
                     fontWeight={600}
                     color="#111827"
-                    sx={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+                    sx={{
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
                   >
                     {sinDatos
-                      ? nombre === "NN" ? "Sin nombre (NN)" : "Sin nombre (SN)"
+                      ? nombre === "NN"
+                        ? "Sin nombre (NN)"
+                        : "Sin nombre (SN)"
                       : nombre}
                   </Typography>
                   {sinDatos && (
@@ -187,7 +200,11 @@ function TablaPacientes({ pacientes, onEditar }) {
                   )}
                 </Box>
                 {p.numeroHistoriaClinica?.trim() && (
-                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: 10 }}>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ fontSize: 10 }}
+                  >
                     HC: {p.numeroHistoriaClinica}
                   </Typography>
                 )}
@@ -220,8 +237,8 @@ function TablaPacientes({ pacientes, onEditar }) {
               {p.genero?.trim() === "M"
                 ? "Masculino"
                 : p.genero?.trim() === "F"
-                ? "Femenino"
-                : "—"}
+                  ? "Femenino"
+                  : "—"}
             </Typography>
 
             {/* Contacto */}
@@ -308,7 +325,18 @@ export default function PacientesPage() {
         enqueueSnackbar(res.mensaje || "Error al buscar", { variant: "error" });
       }
     } catch (err) {
-      enqueueSnackbar(err.message || "Error al buscar pacientes", { variant: "error" });
+      if (err.esErrorUsuario) {
+        // Error de negocio (400, 404, etc) — mostrar al usuario
+        enqueueSnackbar(err.message || "Error al procesar la solicitud", {
+          variant: "error",
+        });
+      } else if (err.code >= 500) {
+        // Error del servidor — mensaje genérico, no técnico
+        enqueueSnackbar("Ocurrió un problema temporal. Intente nuevamente.", {
+          variant: "warning",
+        });
+      }
+      // code === 0 (sin conexión) → silencio total
     } finally {
       setBuscando(false);
     }
@@ -334,7 +362,14 @@ export default function PacientesPage() {
   return (
     <Box sx={{ maxWidth: 1100, mx: "auto" }}>
       {/* HEADER */}
-      <Box sx={{ mb: 3, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      <Box
+        sx={{
+          mb: 3,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
         <Box>
           <Typography variant="h5" fontWeight={700} color="#111827">
             Pacientes
@@ -391,8 +426,16 @@ export default function PacientesPage() {
                   fontWeight: 600,
                   fontSize: 12,
                   ...(tipoBusqueda === opt.id
-                    ? { bgcolor: "#2563eb", "&:hover": { bgcolor: "#1d4ed8" }, boxShadow: "none" }
-                    : { borderColor: "#d1d5db", color: "#374151", "&:hover": { borderColor: "#9ca3af" } }),
+                    ? {
+                        bgcolor: "#2563eb",
+                        "&:hover": { bgcolor: "#1d4ed8" },
+                        boxShadow: "none",
+                      }
+                    : {
+                        borderColor: "#d1d5db",
+                        color: "#374151",
+                        "&:hover": { borderColor: "#9ca3af" },
+                      }),
                 }}
               >
                 {opt.label}
@@ -404,7 +447,11 @@ export default function PacientesPage() {
             <TextField
               fullWidth
               size="small"
-              placeholder={tipoBusqueda === "documento" ? "Ej: 12345678" : "Ej: JOSE NOGALES"}
+              placeholder={
+                tipoBusqueda === "documento"
+                  ? "Ej: 12345678"
+                  : "Ej: JOSE NOGALES"
+              }
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
               onKeyDown={handleKeyDown}
@@ -430,7 +477,11 @@ export default function PacientesPage() {
                 minWidth: 110,
               }}
             >
-              {buscando ? <CircularProgress size={18} color="inherit" /> : "Buscar"}
+              {buscando ? (
+                <CircularProgress size={18} color="inherit" />
+              ) : (
+                "Buscar"
+              )}
             </Button>
           </Box>
         </CardContent>
@@ -450,7 +501,11 @@ export default function PacientesPage() {
           {pacientes.length === 0 ? (
             <Alert
               severity="info"
-              sx={{ borderRadius: 1.5, border: "1px solid #bfdbfe", bgcolor: "#eff6ff" }}
+              sx={{
+                borderRadius: 1.5,
+                border: "1px solid #bfdbfe",
+                bgcolor: "#eff6ff",
+              }}
             >
               No se encontraron pacientes. ¿Desea{" "}
               <strong

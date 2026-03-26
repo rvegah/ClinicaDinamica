@@ -29,11 +29,17 @@ clinicaApiClient.interceptors.response.use(
     if (error.response) {
       const { status, data } = error.response;
       const message = data?.mensaje || data?.message || data?.error || `Error ${status}`;
-      return Promise.reject({ message, code: status, response: error.response });
+      return Promise.reject({
+        message,
+        code: status,
+        response: error.response,
+        esErrorUsuario: status >= 400 && status < 500, // solo 4xx son errores de usuario
+      });
     }
     return Promise.reject({
-      message: 'No se pudo conectar con el servidor de clínica',
+      message: 'Sin conexión',
       code: 0,
+      esErrorUsuario: false, // red caída = silencio
     });
   }
 );

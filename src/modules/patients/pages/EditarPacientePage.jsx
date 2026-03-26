@@ -17,7 +17,12 @@ import {
   CircularProgress,
   Chip,
 } from "@mui/material";
-import { ArrowBack, Save, MedicalInformation, Print  } from "@mui/icons-material";
+import {
+  ArrowBack,
+  Save,
+  MedicalInformation,
+  Print,
+} from "@mui/icons-material";
 import { useSnackbar } from "notistack";
 import pacienteService, {
   TIPOS_DOCUMENTO,
@@ -172,9 +177,18 @@ export default function EditarPacientePage() {
         });
       }
     } catch (err) {
-      enqueueSnackbar(err.message || "Error al actualizar paciente", {
-        variant: "error",
-      });
+      if (err.esErrorUsuario) {
+        // Error de negocio (400, 404, etc) — mostrar al usuario
+        enqueueSnackbar(err.message || "Error al procesar la solicitud", {
+          variant: "error",
+        });
+      } else if (err.code >= 500) {
+        // Error del servidor — mensaje genérico, no técnico
+        enqueueSnackbar("Ocurrió un problema temporal. Intente nuevamente.", {
+          variant: "warning",
+        });
+      }
+      // code === 0 (sin conexión) → silencio total
     } finally {
       setGuardando(false);
     }
@@ -684,7 +698,7 @@ export default function EditarPacientePage() {
           }}
         >
           Cancelar
-        </Button> 
+        </Button>
         <Button
           variant="outlined"
           startIcon={<Print />}
@@ -700,7 +714,7 @@ export default function EditarPacientePage() {
           }}
         >
           Imprimir Folder
-        </Button>       
+        </Button>
         <Button
           variant="outlined"
           startIcon={<Print />}

@@ -136,23 +136,34 @@ const atencionMedicaService = {
   },
 
   notificacionesEnfermeria: async () => {
-  const res = await clinicaApiClient.get('/AtencionEnfermeria/NotificacionesEnfermeria');
-  return res.data;
-},
+    try {
+      const res = await clinicaApiClient.get(
+        "/AtencionEnfermeria/NotificacionesEnfermeria",
+      );
+      return res.data;
+    } catch (err) {
+      // 400 = sin servicios registrados, no es error real
+      if (err.response?.status === 400) return { exitoso: false, datos: [] };
+      throw err;
+    }
+  },
 
-atencionMedico: async ({ medicoId, fecha }) => {
-  const res = await clinicaApiClient.get('/AtencionMedica/AtencionMedico', {
-    params: { Medico_ID: medicoId, FechaAtencion: fecha },
-  });
-  return res.data;
-},
+  atencionMedico: async ({ medicoId, fecha }) => {
+    const res = await clinicaApiClient.get("/AtencionMedica/AtencionMedico", {
+      params: { Medico_ID: medicoId, FechaAtencion: fecha },
+    });
+    return res.data;
+  },
 
-atencionEnfermera: async ({ enfermeraId, fecha }) => {
-  const res = await clinicaApiClient.get('/AtencionMedica/AtencionEnfermera', {
-    params: { Enfermera_ID: enfermeraId, FechaServicio: fecha },
-  });
-  return res.data;
-},
+  atencionEnfermera: async ({ enfermeraId, fecha }) => {
+    const res = await clinicaApiClient.get(
+      "/AtencionMedica/AtencionEnfermera",
+      {
+        params: { Enfermera_ID: enfermeraId, FechaServicio: fecha },
+      },
+    );
+    return res.data;
+  },
 };
 
 export default atencionMedicaService;

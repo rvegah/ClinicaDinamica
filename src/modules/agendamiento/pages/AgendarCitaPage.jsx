@@ -360,9 +360,18 @@ export default function AgendarCitaPage() {
         });
       }
     } catch (err) {
-      enqueueSnackbar(err.message || "Error al agendar cita", {
-        variant: "error",
-      });
+      if (err.esErrorUsuario) {
+        // Error de negocio (400, 404, etc) — mostrar al usuario
+        enqueueSnackbar(err.message || "Error al procesar la solicitud", {
+          variant: "error",
+        });
+      } else if (err.code >= 500) {
+        // Error del servidor — mensaje genérico, no técnico
+        enqueueSnackbar("Ocurrió un problema temporal. Intente nuevamente.", {
+          variant: "warning",
+        });
+      }
+      // code === 0 (sin conexión) → silencio total
     } finally {
       setGuardando(false);
     }
