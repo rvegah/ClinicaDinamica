@@ -155,9 +155,18 @@ function BuscadorCitas({ onSeleccionar }) {
         });
       }
     } catch (err) {
-      enqueueSnackbar(err.message || "Error al iniciar consulta", {
-        variant: "error",
-      });
+      if (err.esErrorUsuario) {
+        // Error de negocio (400, 404, etc) — mostrar al usuario
+        enqueueSnackbar(err.message || "Error al procesar la solicitud", {
+          variant: "error",
+        });
+      } else if (err.code >= 500) {
+        // Error del servidor — mensaje genérico, no técnico
+        enqueueSnackbar("Ocurrió un problema temporal. Intente nuevamente.", {
+          variant: "warning",
+        });
+      }
+      // code === 0 (sin conexión) → silencio total
     } finally {
       setIniciando(null);
     }
@@ -558,7 +567,18 @@ function FormularioConsulta({ cita, consultaMedica, onFinalizar }) {
         });
       }
     } catch (err) {
-      enqueueSnackbar(err.message || "Error", { variant: "error" });
+      if (err.esErrorUsuario) {
+        // Error de negocio (400, 404, etc) — mostrar al usuario
+        enqueueSnackbar(err.message || "Error al procesar la solicitud", {
+          variant: "error",
+        });
+      } else if (err.code >= 500) {
+        // Error del servidor — mensaje genérico, no técnico
+        enqueueSnackbar("Ocurrió un problema temporal. Intente nuevamente.", {
+          variant: "warning",
+        });
+      }
+      // code === 0 (sin conexión) → silencio total
     } finally {
       setGuardandoDiag(false);
     }
@@ -592,7 +612,18 @@ function FormularioConsulta({ cita, consultaMedica, onFinalizar }) {
         enqueueSnackbar(res.mensaje || "Error", { variant: "error" });
       }
     } catch (err) {
-      enqueueSnackbar(err.message || "Error", { variant: "error" });
+      if (err.esErrorUsuario) {
+        // Error de negocio (400, 404, etc) — mostrar al usuario
+        enqueueSnackbar(err.message || "Error al procesar la solicitud", {
+          variant: "error",
+        });
+      } else if (err.code >= 500) {
+        // Error del servidor — mensaje genérico, no técnico
+        enqueueSnackbar("Ocurrió un problema temporal. Intente nuevamente.", {
+          variant: "warning",
+        });
+      }
+      // code === 0 (sin conexión) → silencio total
     } finally {
       setGuardandoProc(false);
     }
@@ -634,7 +665,18 @@ function FormularioConsulta({ cita, consultaMedica, onFinalizar }) {
         enqueueSnackbar(res.mensaje || "Error", { variant: "error" });
       }
     } catch (err) {
-      enqueueSnackbar(err.message || "Error", { variant: "error" });
+      if (err.esErrorUsuario) {
+        // Error de negocio (400, 404, etc) — mostrar al usuario
+        enqueueSnackbar(err.message || "Error al procesar la solicitud", {
+          variant: "error",
+        });
+      } else if (err.code >= 500) {
+        // Error del servidor — mensaje genérico, no técnico
+        enqueueSnackbar("Ocurrió un problema temporal. Intente nuevamente.", {
+          variant: "warning",
+        });
+      }
+      // code === 0 (sin conexión) → silencio total
     } finally {
       setGuardandoOrden(false);
     }
@@ -692,7 +734,18 @@ function FormularioConsulta({ cita, consultaMedica, onFinalizar }) {
         enqueueSnackbar(res.mensaje || "Error", { variant: "error" });
       }
     } catch (err) {
-      enqueueSnackbar(err.message || "Error", { variant: "error" });
+      if (err.esErrorUsuario) {
+        // Error de negocio (400, 404, etc) — mostrar al usuario
+        enqueueSnackbar(err.message || "Error al procesar la solicitud", {
+          variant: "error",
+        });
+      } else if (err.code >= 500) {
+        // Error del servidor — mensaje genérico, no técnico
+        enqueueSnackbar("Ocurrió un problema temporal. Intente nuevamente.", {
+          variant: "warning",
+        });
+      }
+      // code === 0 (sin conexión) → silencio total
     } finally {
       setGuardandoRx(false);
     }
@@ -741,9 +794,18 @@ function FormularioConsulta({ cita, consultaMedica, onFinalizar }) {
         });
       }
     } catch (err) {
-      enqueueSnackbar(err.message || "Error al finalizar", {
-        variant: "error",
-      });
+      if (err.esErrorUsuario) {
+        // Error de negocio (400, 404, etc) — mostrar al usuario
+        enqueueSnackbar(err.message || "Error al procesar la solicitud", {
+          variant: "error",
+        });
+      } else if (err.code >= 500) {
+        // Error del servidor — mensaje genérico, no técnico
+        enqueueSnackbar("Ocurrió un problema temporal. Intente nuevamente.", {
+          variant: "warning",
+        });
+      }
+      // code === 0 (sin conexión) → silencio total
     } finally {
       setFinalizando(false);
     }
@@ -1174,7 +1236,11 @@ function FormularioConsulta({ cita, consultaMedica, onFinalizar }) {
                 size="small"
                 options={cie10Lista}
                 getOptionLabel={(d) => `${d.nombre} — ${d.codigo}`}
-                value={cie10Lista.find(d => d.diagnosticoCIE10_ID === diagForm.diagnostico_ID) || null}
+                value={
+                  cie10Lista.find(
+                    (d) => d.diagnosticoCIE10_ID === diagForm.diagnostico_ID,
+                  ) || null
+                }
                 onChange={(_, d) => {
                   setDiagForm((p) => ({
                     ...p,
@@ -1187,7 +1253,9 @@ function FormularioConsulta({ cita, consultaMedica, onFinalizar }) {
                   <TextField {...params} label="Diagnóstico CIE-10 *" />
                 )}
                 noOptionsText="Sin resultados"
-                isOptionEqualToValue={(opt, val) => opt.diagnosticoCIE10_ID === val.diagnosticoCIE10_ID}
+                isOptionEqualToValue={(opt, val) =>
+                  opt.diagnosticoCIE10_ID === val.diagnosticoCIE10_ID
+                }
               />
               <TextField
                 select

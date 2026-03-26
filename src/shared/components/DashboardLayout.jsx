@@ -116,10 +116,11 @@ const DashboardLayout = ({ children, currentUser }) => {
       try {
         const data = await atencionMedicaService.notificacionesEnfermeria();
         if (data.exitoso) setNotificaciones(data.datos || []);
-      } catch {}
+        else setNotificaciones([]);
+      } catch {} // silenciar errores de red (ERR_CONNECTION_REFUSED)
     };
     fetchNotifs();
-    const interval = setInterval(fetchNotifs, 30000);
+    const interval = setInterval(fetchNotifs, 60000);
     return () => clearInterval(interval);
   }, [esRecepcion]);
 

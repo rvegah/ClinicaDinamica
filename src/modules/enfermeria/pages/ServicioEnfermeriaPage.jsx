@@ -252,9 +252,18 @@ export default function ServicioEnfermeriaPage() {
         });
       }
     } catch (err) {
-      enqueueSnackbar(err.message || "Error al guardar servicio", {
-        variant: "error",
-      });
+      if (err.esErrorUsuario) {
+        // Error de negocio (400, 404, etc) — mostrar al usuario
+        enqueueSnackbar(err.message || "Error al procesar la solicitud", {
+          variant: "error",
+        });
+      } else if (err.code >= 500) {
+        // Error del servidor — mensaje genérico, no técnico
+        enqueueSnackbar("Ocurrió un problema temporal. Intente nuevamente.", {
+          variant: "warning",
+        });
+      }
+      // code === 0 (sin conexión) → silencio total
     } finally {
       setGuardando(false);
     }
@@ -672,7 +681,11 @@ export default function ServicioEnfermeriaPage() {
                 {insumosAgregados.map((ins, i) => (
                   <Box key={i} sx={listaItem}>
                     <Box>
-                      <Typography variant="body2" fontWeight={700} color="#111827">
+                      <Typography
+                        variant="body2"
+                        fontWeight={700}
+                        color="#111827"
+                      >
                         {ins.nombreInsumo}
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
@@ -695,7 +708,7 @@ export default function ServicioEnfermeriaPage() {
                         size="small"
                         onClick={() =>
                           setInsumosAgregados((prev) =>
-                            prev.filter((_, idx) => idx !== i)
+                            prev.filter((_, idx) => idx !== i),
                           )
                         }
                         sx={{ color: "#ef4444" }}

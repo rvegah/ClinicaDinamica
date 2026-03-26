@@ -1,16 +1,18 @@
 // src/services/api/apiClient.js - Cliente HTTP base configurado
 
-import axios from 'axios';
+import axios from "axios";
 
 // URL base del API
-const API_BASE_URL = import.meta.env.VITE_CORE_API_URL || 'https://dinamax-core.farmadinamica.com.bo/api/dinamax-core';
+const API_BASE_URL =
+  import.meta.env.VITE_CORE_API_URL ||
+  "https://dinamax-core.farmadinamica.com.bo/api/dinamax-core";
 
 // Crear instancia de Axios
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
   timeout: 45000, // 15 segundos
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
   // CRÍTICO: Habilitar cookies de sesión
   withCredentials: true,
@@ -19,7 +21,7 @@ const apiClient = axios.create({
 // Interceptor de REQUEST - para debugging y agregar headers si es necesario
 apiClient.interceptors.request.use(
   (config) => {
-    console.log('📤 REQUEST:', {
+    console.log("📤 REQUEST:", {
       method: config.method?.toUpperCase(),
       url: config.url,
       data: config.data,
@@ -27,15 +29,15 @@ apiClient.interceptors.request.use(
     return config;
   },
   (error) => {
-    console.error('❌ REQUEST ERROR:', error);
+    console.error("❌ REQUEST ERROR:", error);
     return Promise.reject(error);
-  }
+  },
 );
 
 // Interceptor de RESPONSE - manejo de errores unificado
 apiClient.interceptors.response.use(
   (response) => {
-    console.log('✅ RESPONSE:', {
+    console.log("✅ RESPONSE:", {
       status: response.status,
       url: response.config.url,
       data: response.data,
@@ -43,7 +45,7 @@ apiClient.interceptors.response.use(
     return response;
   },
   (error) => {
-    console.error('❌ RESPONSE ERROR:', {
+    console.error("❌ RESPONSE ERROR:", {
       status: error.response?.status,
       url: error.config?.url,
       data: error.response?.data,
@@ -57,53 +59,61 @@ apiClient.interceptors.response.use(
 
       switch (status) {
         case 401:
-          // No autorizado - credenciales incorrectas
+          console.warn("⚠️ Sesión expirada");
+
+          // 🔥 limpiar sesión local
+          sessionStorage.clear();
+          localStorage.clear();
+
+          // 🔥 redirigir sin mostrar error feo
+          window.location.href = "/clinica-farma/";
+
           return Promise.reject({
-            message: data?.mensaje || 'Credenciales incorrectas',
+            message: "La sesión expiró",
             code: 401,
           });
 
         case 403:
           // Prohibido - sin permisos
           return Promise.reject({
-            message: data?.mensaje || 'No tienes permisos para esta acción',
+            message: data?.mensaje || "No tienes permisos para esta acción",
             code: 403,
           });
 
         case 404:
           // No encontrado
           return Promise.reject({
-            message: data?.mensaje || 'Recurso no encontrado',
+            message: data?.mensaje || "Recurso no encontrado",
             code: 404,
           });
 
         case 500:
-          // Error del servidor
           return Promise.reject({
-            message: data?.mensaje || 'Error interno del servidor',
+            message: "Ocurrió un problema temporal. Intente nuevamente.",
             code: 500,
+            esErrorUsuario: false,
           });
 
         default:
           return Promise.reject({
-            message: data?.mensaje || 'Error en la solicitud',
+            message: data?.mensaje || "Error en la solicitud",
             code: status,
           });
       }
     } else if (error.request) {
       // La petición fue hecha pero no hubo respuesta
       return Promise.reject({
-        message: 'No se pudo conectar con el servidor',
+        message: "No se pudo conectar con el servidor",
         code: 0,
       });
     } else {
       // Algo pasó al configurar la petición
       return Promise.reject({
-        message: error.message || 'Error desconocido',
+        message: error.message || "Error desconocido",
         code: -1,
       });
     }
-  }
+  },
 );
 
 export default apiClient;

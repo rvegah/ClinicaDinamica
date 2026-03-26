@@ -149,19 +149,19 @@ export default function SignosVitalesPage() {
         paciente_ID:
           citaSeleccionada.paciente_ID || citaSeleccionada.codigoPaciente,
         enfermera_ID: usuario.personalMedicoId,
-        presionSistolica: Number(signos.presionSistolica) || 0,
-        presionDiastolica: Number(signos.presionDiastolica) || 0,
+        presionSistolica: parseFloat(signos.presionSistolica) || 0,
+        presionDiastolica: parseFloat(signos.presionDiastolica) || 0,
         frecuenciaCardiaca: Number(signos.frecuenciaCardiaca) || 0,
         frecuenciaRespiratoria: Number(signos.frecuenciaRespiratoria) || 0,
-        temperatura: Number(signos.temperatura) || 0,
-        saturacionOxigeno: Number(signos.saturacionOxigeno) || 0,
-        peso: Number(signos.peso) || 0,
-        talla: Number(signos.talla) || 0,
-        /*perimetroCefalico: Number(signos.perimetroCefalico) || 0,
-        perimetroAbdominal: Number(signos.perimetroAbdominal) || 0,*/
+        temperatura: parseFloat(signos.temperatura) || 0,
+        saturacionOxigeno: parseFloat(signos.saturacionOxigeno) || 0,
+        peso: parseFloat(signos.peso) || 0,
+        talla: parseFloat(signos.talla) || 0,
+        /*perimetroCefalico: parseFloat(signos.perimetroCefalico) || 0,
+        perimetroAbdominal: parseFloat(signos.perimetroAbdominal) || 0,*/
         perimetroCefalico: 0,
         perimetroAbdominal: 0,
-        glicemia: Number(signos.glicemia) || 0,
+        glicemia: parseFloat(signos.glicemia) || 0,
         observaciones: signos.observaciones || "",
         usuarioRegistroAlta: usuario.id,
       };
@@ -181,9 +181,18 @@ export default function SignosVitalesPage() {
         });
       }
     } catch (err) {
-      enqueueSnackbar(err.message || "Error al guardar triaje", {
-        variant: "error",
-      });
+      if (err.esErrorUsuario) {
+        // Error de negocio (400, 404, etc) — mostrar al usuario
+        enqueueSnackbar(err.message || "Error al procesar la solicitud", {
+          variant: "error",
+        });
+      } else if (err.code >= 500) {
+        // Error del servidor — mensaje genérico, no técnico
+        enqueueSnackbar("Ocurrió un problema temporal. Intente nuevamente.", {
+          variant: "warning",
+        });
+      }
+      // code === 0 (sin conexión) → silencio total
     } finally {
       setGuardando(false);
     }
@@ -221,7 +230,7 @@ export default function SignosVitalesPage() {
             </Typography>
           ) : null,
         }}
-        inputProps={{ min: 0, step: "any" }}
+        inputProps={{ min: 0, step: 0.1 }}
       />
     </Box>
   );
@@ -230,8 +239,11 @@ export default function SignosVitalesPage() {
     const w = window.open("", "_blank", "width=680,height=900");
     const ahora = new Date();
     const fechaHora = ahora.toLocaleString("es-BO", {
-      day: "2-digit", month: "2-digit", year: "numeric",
-      hour: "2-digit", minute: "2-digit",
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
 
     const svsHtml = [
@@ -248,13 +260,15 @@ export default function SignosVitalesPage() {
       ["Glicemia", signosData.glicemia, "mg/dL"],
     ]
       .filter(([, val]) => Number(val) > 0)
-      .map(([label, val, unit]) =>
-        `<div class="sv-item">
+      .map(
+        ([label, val, unit]) =>
+          `<div class="sv-item">
           <span class="sv-label">${label}</span>
           <span class="sv-value">${val}</span>
           <span class="sv-unit">${unit}</span>
-        </div>`
-      ).join("");
+        </div>`,
+      )
+      .join("");
 
     w.document.write(`
     <html>
@@ -305,11 +319,15 @@ export default function SignosVitalesPage() {
 
       <div class="sv-grid">${svsHtml}</div>
 
-      ${signosData.observaciones ? `
+      ${
+        signosData.observaciones
+          ? `
         <div class="obs-box">
           <div class="obs-label">Observaciones de Enfermería:</div>
           <div>${signosData.observaciones}</div>
-        </div>` : ""}
+        </div>`
+          : ""
+      }
 
       <div class="divider"></div>
 
