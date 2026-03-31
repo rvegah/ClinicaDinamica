@@ -26,6 +26,7 @@ import {
   Tabs,
   CircularProgress,
   MenuItem,
+  Tooltip,
 } from "@mui/material";
 import {
   MedicalServices,
@@ -215,6 +216,24 @@ function CategoryCard({ categoria, servicios, onClick }) {
   );
 }
 
+// ── Detalles hardcode (temporal hasta que llegue del endpoint) ────────────────
+const DETALLES_HARDCODE = {
+  "ENF-001":
+    "Procedimiento estéril. Incluye sonda Foley N°14-18, lubricante, antiséptico y bolsa colectora. Duración aprox. 20 min. Requiere prescripción médica.",
+  "ENF-002":
+    "Inserción de sonda por vía nasal hasta estómago. Incluye material completo. Indicado para alimentación enteral o vaciado gástrico. Duración aprox. 15 min.",
+  "ENF-030":
+    "Sesión individual de nebulización con equipo. No incluye medicamento. Duración 10-15 min. Se pueden realizar múltiples sesiones según indicación médica.",
+  "ENF-003":
+    "Procedimiento de emergencia. Incluye sonda gástrica, jeringa de irrigación y solución salina. Requiere supervisión médica. Duración 30-45 min.",
+  "ENF-051":
+    "Toma de muestra cervical para estudio citológico. Incluye espéculo, espátula y cepillo endocervical. Resultado disponible en 5-7 días hábiles.",
+  CONS_PEDIATRIA:
+    "Consulta para pacientes de 0 a 14 años. Incluye evaluación clínica completa, control de crecimiento y desarrollo, y orientación a padres.",
+  CONS_MED_GENERAL:
+    "Evaluación clínica integral. Incluye anamnesis, exploración física, diagnóstico y prescripción. Duración aprox. 20-30 min.",
+};
+
 // ── Dialog de servicios ───────────────────────────────────────────────────────
 function ServiciosDialog({ open, onClose, categoria, servicios }) {
   const style = getCategoryStyle(categoria);
@@ -296,70 +315,174 @@ function ServiciosDialog({ open, onClose, categoria, servicios }) {
           {servicios.map((s, idx) => {
             const IconSvc = getIconForService(s.descripcion);
             const isLast = idx === servicios.length - 1;
+            const detalles = s.detalles || DETALLES_HARDCODE[s.codigo] || null;
 
             return (
               <React.Fragment key={s.codigo}>
-                <ListItem
-                  sx={{
-                    px: 3,
-                    py: 1.4,
-                    transition: "background 0.15s",
-                    "&:hover": { bgcolor: "rgba(0,0,0,0.03)" },
-                  }}
-                >
-                  <ListItemAvatar sx={{ minWidth: 46 }}>
-                    <Avatar
-                      sx={{
-                        bgcolor: style.color + "1A",
-                        width: 34,
-                        height: 34,
-                        border: `1.5px solid ${style.border}`,
-                      }}
-                    >
-                      <IconSvc sx={{ fontSize: "1rem", color: style.color }} />
-                    </Avatar>
-                  </ListItemAvatar>
-
-                  <ListItemText
-                    primary={
-                      <Typography
+                {/* ← ENVOLVER ListItem con Tooltip */}
+                <Tooltip
+                  title={
+                    detalles ? (
+                      <Box
                         sx={{
-                          fontWeight: 600,
-                          fontSize: "0.85rem",
-                          color: "#1A2B4A",
-                          lineHeight: 1.3,
+                          borderRadius: 2.5,
+                          overflow: "hidden",
+                          border: `1.5px solid ${style.border}`,
+                          bgcolor: "white",
                         }}
                       >
-                        {s.descripcion}
-                      </Typography>
-                    }
-                    secondary={
-                      <Chip
-                        label={s.codigo}
-                        size="small"
-                        sx={{
-                          mt: 0.4,
-                          height: 17,
-                          bgcolor: style.color + "18",
-                          color: style.color,
-                          fontWeight: 700,
-                          fontSize: "0.6rem",
-                          "& .MuiChip-label": { px: 0.8 },
-                        }}
-                      />
-                    }
-                  />
+                        {/* Header con color de categoría */}
+                        <Box
+                          sx={{
+                            background: style.gradient,
+                            px: 2,
+                            py: 1,
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 1,
+                          }}
+                        >
+                          <Box
+                            sx={{
+                              width: 6,
+                              height: 6,
+                              borderRadius: "50%",
+                              bgcolor: "rgba(255,255,255,0.9)",
+                              flexShrink: 0,
+                            }}
+                          />
+                          <Typography
+                            sx={{
+                              fontWeight: 700,
+                              fontSize: "0.65rem",
+                              color: "white",
+                              textTransform: "uppercase",
+                              letterSpacing: "1px",
+                            }}
+                          >
+                            Información del servicio
+                          </Typography>
+                        </Box>
 
-                  {/* Precio */}
-                  <Box sx={{ textAlign: "right", ml: 2, flexShrink: 0 }}>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 0.3,
-                        justifyContent: "flex-end",
-                      }}
-                    >
+                        {/* Cuerpo */}
+                        <Box sx={{ px: 2, py: 1.5, bgcolor: style.light }}>
+                          <Typography
+                            sx={{
+                              fontSize: "0.8rem",
+                              color: "#374151",
+                              lineHeight: 1.7,
+                              fontWeight: 400,
+                            }}
+                          >
+                            {detalles}
+                          </Typography>
+                        </Box>
+
+                        {/* Footer */}
+                        <Box
+                          sx={{
+                            px: 2,
+                            py: 0.75,
+                            bgcolor: style.border + "55",
+                            borderTop: `1px solid ${style.border}`,
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 0.5,
+                          }}
+                        >
+                          <Typography
+                            sx={{
+                              fontSize: "0.62rem",
+                              color: style.color,
+                              fontWeight: 600,
+                            }}
+                          >
+                            {s.codigo}
+                          </Typography>
+                          <Typography
+                            sx={{ fontSize: "0.62rem", color: "#9ca3af" }}
+                          >
+                            · precio referencial:{" "}
+                            {s.precioReferencia?.toFixed(2)} Bs.
+                          </Typography>
+                        </Box>
+                      </Box>
+                    ) : (
+                      ""
+                    )
+                  }
+                  arrow
+                  placement="right"
+                  disableHoverListener={!detalles}
+                  componentsProps={{
+                    tooltip: {
+                      sx: {
+                        bgcolor: "transparent",
+                        p: 0,
+                        maxWidth: 300,
+                        boxShadow: "none",
+                        filter: "drop-shadow(0 8px 24px rgba(0,0,0,0.25))",
+                      },
+                    },
+                    arrow: {
+                      sx: { color: style.color },
+                    },
+                  }}
+                >
+                  <ListItem
+                    sx={{
+                      px: 3,
+                      py: 1.4,
+                      transition: "background 0.15s",
+                      "&:hover": { bgcolor: "rgba(0,0,0,0.03)" },
+                    }}
+                  >
+                    <ListItemAvatar sx={{ minWidth: 46 }}>
+                      <Avatar
+                        sx={{
+                          bgcolor: style.color + "1A",
+                          width: 34,
+                          height: 34,
+                          border: `1.5px solid ${style.border}`,
+                        }}
+                      >
+                        <IconSvc
+                          sx={{ fontSize: "1rem", color: style.color }}
+                        />
+                      </Avatar>
+                    </ListItemAvatar>
+
+                    <ListItemText
+                      primary={
+                        <Typography
+                          sx={{
+                            fontWeight: 600,
+                            fontSize: "0.85rem",
+                            color: "#1A2B4A",
+                            lineHeight: 1.3,
+                          }}
+                        >
+                          {s.descripcion}
+                        </Typography>
+                      }
+                      secondary={
+                        <Chip
+                          label={s.codigo}
+                          size="small"
+                          sx={{
+                            mt: 0.4,
+                            height: 17,
+                            bgcolor: style.color + "18",
+                            color: style.color,
+                            fontWeight: 700,
+                            fontSize: "0.6rem",
+                            "& .MuiChip-label": { px: 0.8 },
+                          }}
+                        />
+                      }
+                    />
+
+                    <Box sx={{ textAlign: "right", ml: 2, flexShrink: 0 }}>
                       <Typography
                         sx={{
                           fontWeight: 800,
@@ -369,18 +492,18 @@ function ServiciosDialog({ open, onClose, categoria, servicios }) {
                       >
                         {s.precioReferencia?.toFixed(2)} Bs.
                       </Typography>
+                      <Typography
+                        sx={{
+                          fontSize: "0.6rem",
+                          color: "#7F8C8D",
+                          fontWeight: 500,
+                        }}
+                      >
+                        precio referencial.
+                      </Typography>
                     </Box>
-                    <Typography
-                      sx={{
-                        fontSize: "0.6rem",
-                        color: "#7F8C8D",
-                        fontWeight: 500,
-                      }}
-                    >
-                      precio referencial.
-                    </Typography>
-                  </Box>
-                </ListItem>
+                  </ListItem>
+                </Tooltip>
 
                 {!isLast && (
                   <Box
@@ -544,7 +667,7 @@ function Dashboard() {
 
   return (
     <Box>
-      {esSuperAdmin && (
+      {/*esSuperAdmin && (
         <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
           <Button
             variant="contained"
@@ -562,7 +685,7 @@ function Dashboard() {
             Reporte de Ingresos
           </Button>
         </Box>
-      )}
+      )*/}
       {/* ── HERO ─────────────────────────────────────────────────────────── */}
       <Paper
         elevation={0}
@@ -1086,9 +1209,9 @@ function Dashboard() {
         servicios={serviciosDialog}
       />
 
-      {verTotales && (
+      {/*verTotales && (
         <>
-          {/* ── TÍTULO ───────────────────────────────────────────────────────── */}
+          {/* ── TÍTULO ───────────────────────────────────────────────────────── *}
           <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2.5 }}>
             <Typography
               sx={{
@@ -1114,7 +1237,7 @@ function Dashboard() {
               Selecciona un médico para ver el detalle
             </Typography>
           </Box>
-          {/* ── REPORTE MÉDICO ── */}
+          {/* ── REPORTE MÉDICO ── *}
           <Paper
             elevation={0}
             sx={{
@@ -1299,7 +1422,7 @@ function Dashboard() {
             )}
           </Paper>
 
-          {/* ── REPORTE ENFERMERÍA ── */}
+          {/* ── REPORTE ENFERMERÍA ── *}
           <Paper
             elevation={0}
             sx={{
@@ -1485,7 +1608,7 @@ function Dashboard() {
             )}
           </Paper>
         </>
-      )}
+      )*/}
     </Box>
   );
 }
