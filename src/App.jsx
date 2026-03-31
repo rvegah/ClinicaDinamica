@@ -30,6 +30,9 @@ import ConsultaMedicaPage from "./modules/consulta/pages/ConsultaMedicaPage";
 import ServicioEnfermeriaPage from "./modules/enfermeria/pages/ServicioEnfermeriaPage";
 
 import ReporteIngresosPage from "./modules/reportes/pages/ReporteIngresosPage";
+import EstadisticasAtencionPage from "./modules/reportes/pages/EstadisticasAtencionPage";
+
+import ProcedimientosPage from "./modules/configuracion/pages/ProcedimientosPage";
 
 // Redirección post-login
 function DashboardRedirect({ children }) {
@@ -122,6 +125,9 @@ function ProtectedRoutes() {
             <Route path="/emergencias/atencion" element={<ServicioEnfermeriaPage />} />
 
             <Route path="/reportes/ingresos" element={<ReporteIngresosPage />} />
+            <Route path="/reportes/estadisticas" element={<EstadisticasAtencionPage />} />
+
+            <Route path="/config/procedimientos" element={<ProcedimientosPage />} />
 
             {/* Wildcard SIEMPRE AL FINAL */}
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
