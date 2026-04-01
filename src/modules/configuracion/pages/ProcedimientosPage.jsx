@@ -245,6 +245,7 @@ function ProcedimientoDrawer({ open, onClose, item, especialidades, onSaved }) {
           select size="small" fullWidth label="Categoría"
           value={form.categoria}
           onChange={(e) => set("categoria", e.target.value)}
+          disabled={!esNuevo}
         >
           <MenuItem value="ENFERMERIA">ENFERMERÍA</MenuItem>
           <MenuItem value="DIAGNOSTICO">DIAGNÓSTICO</MenuItem>
@@ -257,6 +258,7 @@ function ProcedimientoDrawer({ open, onClose, item, especialidades, onSaved }) {
           onChange={(e) => set("codigo", e.target.value.toUpperCase())}
           placeholder="Ej: ENF-001 (opcional, se auto-asigna)"
           helperText="Dejar vacío para auto-asignar"
+          disabled={!esNuevo}
         />
 
         {/* Nombre */}
@@ -265,6 +267,7 @@ function ProcedimientoDrawer({ open, onClose, item, especialidades, onSaved }) {
           value={form.nombre}
           onChange={(e) => set("nombre", e.target.value)}
           placeholder="Ej: Curación pequeña"
+          disabled={!esNuevo}
         />
 
         {/* Descripción */}
@@ -514,12 +517,14 @@ function InsumoDrawer({ open, onClose, item, onSaved }) {
           onChange={(e) => set("codigoProducto", e.target.value.toUpperCase())}
           placeholder="Ej: INS-0001"
           helperText="Dejar vacío para auto-asignar"
+          disabled={!esNuevo}
         />
         <TextField
           size="small" fullWidth label="Nombre *"
           value={form.nombreProducto}
           onChange={(e) => set("nombreProducto", e.target.value)}
           placeholder="Ej: Jeringa descartable"
+          disabled={!esNuevo}
         />
         <TextField
           size="small" fullWidth label="Descripción"

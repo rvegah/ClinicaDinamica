@@ -16,12 +16,16 @@ import {
   Alert,
   CircularProgress,
   Chip,
+  Drawer,
+  IconButton,
 } from "@mui/material";
 import {
   ArrowBack,
   Save,
   MedicalInformation,
   Print,
+  AssignmentInd,
+  Close,
 } from "@mui/icons-material";
 import { useSnackbar } from "notistack";
 import pacienteService, {
@@ -29,6 +33,7 @@ import pacienteService, {
   GENEROS,
 } from "../../../services/api/pacienteService";
 import { fechaHoy } from "../../../utils/fecha";
+import ConsentimientosPage from "./ConsentimientosPage";
 
 export default function EditarPacientePage() {
   const navigate = useNavigate();
@@ -57,6 +62,8 @@ export default function EditarPacientePage() {
     direccionCompleta: "",
   });
   const [guardando, setGuardando] = useState(false);
+
+  const [consentimientosOpen, setConsentimientosOpen] = useState(false);
 
   // Prellenar formulario con datos del paciente
   useEffect(() => {
@@ -694,10 +701,28 @@ export default function EditarPacientePage() {
             textTransform: "none",
             borderColor: "#d1d5db",
             color: "#374151",
+            fontSize: "0.7rem",
             "&:hover": { borderColor: "#9ca3af", bgcolor: "#f9fafb" },
           }}
         >
           Cancelar
+        </Button>
+        <Button
+          variant="outlined"
+          startIcon={<AssignmentInd />}
+          onClick={() => setConsentimientosOpen(true)}
+          disabled={guardando}
+          sx={{
+            borderRadius: 1.5,
+            fontWeight: 600,
+            textTransform: "none",
+            borderColor: "#7c3aed",
+            color: "#7c3aed",
+            fontSize: "0.7rem",
+            "&:hover": { borderColor: "#6d28d9", bgcolor: "#faf5ff" },
+          }}
+        >
+          Consentimientos
         </Button>
         <Button
           variant="outlined"
@@ -710,6 +735,7 @@ export default function EditarPacientePage() {
             textTransform: "none",
             borderColor: "#e65c00",
             color: "#e65c00",
+            fontSize: "0.8rem",
             "&:hover": { borderColor: "#c0392b", bgcolor: "#fff5f0" },
           }}
         >
@@ -726,6 +752,7 @@ export default function EditarPacientePage() {
             textTransform: "none",
             borderColor: "#374151",
             color: "#374151",
+            fontSize: "0.7rem",
             "&:hover": { borderColor: "#111827", bgcolor: "#f9fafb" },
           }}
         >
@@ -750,11 +777,37 @@ export default function EditarPacientePage() {
             textTransform: "none",
             boxShadow: "none",
             px: 3,
+            fontSize: "0.7rem",
           }}
         >
           {guardando ? "Actualizando..." : "Actualizar Paciente"}
         </Button>
       </Box>
+      <Drawer
+        anchor="right"
+        open={consentimientosOpen}
+        onClose={() => setConsentimientosOpen(false)}
+        PaperProps={{
+          sx: { width: { xs: "100%", sm: 620 }, p: 3, overflowY: "auto" },
+        }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            mb: 2,
+          }}
+        >
+          <Typography variant="h6" fontWeight={700}>
+            Consentimientos Informados
+          </Typography>
+          <IconButton onClick={() => setConsentimientosOpen(false)}>
+            <Close />
+          </IconButton>
+        </Box>
+        <ConsentimientosPage paciente={pacienteOriginal} />
+      </Drawer>
     </Box>
   );
 }
